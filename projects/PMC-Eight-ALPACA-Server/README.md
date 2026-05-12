@@ -12,15 +12,15 @@ This Groups.io files area may require a signed-in Groups.io account with access 
 
 ## Project Status
 
-Status: ALPACA Server package imported; contributor permission to host and redistribute the submitted files has been received; pending final Explore Scientific review before public announcement.
+Status: ALPACA Server package imported; contributor permission to host and redistribute the submitted files has been received; Explore Scientific review is complete.
 
 ## Intended Purpose
 
-The PMC-Eight ALPACA Server is expected to provide Alpaca-compatible network access for Explore Scientific PMC-Eight telescope mounts. The final description should be verified against the submitted project documentation during Explore Scientific review.
+The PMC-Eight ALPACA Server provides Alpaca-compatible network access for Explore Scientific PMC-Eight telescope mounts.
 
-## Before Public Release
+## Review Status
 
-Before files are announced publicly, confirm:
+Explore Scientific review has confirmed:
 
 1. Contributor redistribution permission is documented in this repository.
 2. The imported files match the version intended for public release.
