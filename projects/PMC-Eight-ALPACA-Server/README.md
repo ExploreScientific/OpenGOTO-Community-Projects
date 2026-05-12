@@ -47,6 +47,12 @@ The original `publish-win-x64.zip` archive was expanded into the repository and 
 
 Checksums are listed in `checksums/SHA256SUMS.md`.
 
+## Current Release
+
+Recommended user download:
+
+https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc-eight-alpaca-server-2025.06.22
+
 ## User Documentation
 
 - `docs/INSTALL_AND_RUN.md` - basic download, install, run, and verification procedure.

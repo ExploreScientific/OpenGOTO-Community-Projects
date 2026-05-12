@@ -16,6 +16,10 @@ The expanded package is stored in this repository at:
 
 For normal users, the recommended download method is the GitHub Release package rather than cloning the repository.
 
+Current release:
+
+https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc-eight-alpaca-server-2025.06.22
+
 ## System Requirements
 
 - Windows x64 PC.
@@ -62,4 +66,3 @@ For normal users, the recommended download method is the GitHub Release package 
 SHA-256 checksums for the expanded package files are listed in:
 
 `projects/PMC-Eight-ALPACA-Server/checksums/SHA256SUMS.md`
-
