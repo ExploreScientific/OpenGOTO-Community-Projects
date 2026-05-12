@@ -12,7 +12,7 @@ This Groups.io files area may require a signed-in Groups.io account with access 
 
 ## Project Status
 
-Status: Pending file import, contributor permission confirmation, and Explore Scientific review.
+Status: Groups.io artifacts imported locally; pending contributor permission confirmation, license clarification, and Explore Scientific review before public release.
 
 ## Intended Purpose
 
@@ -37,6 +37,14 @@ Before files are published in this repository, confirm:
 | `installers/` | Public installer packages or executable distributions. |
 | `source/` | Source code, if the contributor authorizes source publication. |
 | `checksums/` | SHA-256 checksum files for release artifacts. |
+
+## Imported Artifacts
+
+| File | Purpose |
+| --- | --- |
+| `installers/publish-win-x64.zip` | Windows x64 published ALPACA Server package. |
+
+Checksums are listed in `checksums/SHA256SUMS.md`.
 
 ## Attribution
 
