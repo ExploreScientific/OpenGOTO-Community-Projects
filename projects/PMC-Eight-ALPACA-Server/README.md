@@ -2,7 +2,7 @@
 
 This repository is intended to host the PMC-Eight ALPACA Server project contributed by Prosaic Alto from the PMC-Eight community.
 
-The submitted ALPACA Server package has been imported into this local repository from the Groups.io MOUNTS sub-forum files section.
+The submitted ALPACA Server package has been imported into this repository from the Groups.io MOUNTS sub-forum files section.
 
 Known source location:
 
@@ -12,7 +12,7 @@ This Groups.io files area may require a signed-in Groups.io account with access 
 
 ## Project Status
 
-Status: Groups.io artifacts imported locally; contributor permission to host and redistribute the submitted files has been received; pending final Explore Scientific review before public release.
+Status: ALPACA Server package imported; contributor permission to host and redistribute the submitted files has been received; pending final Explore Scientific review before public announcement.
 
 ## Intended Purpose
 
