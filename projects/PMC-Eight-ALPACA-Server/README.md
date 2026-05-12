@@ -47,6 +47,11 @@ The original `publish-win-x64.zip` archive was expanded into the repository and 
 
 Checksums are listed in `checksums/SHA256SUMS.md`.
 
+## User Documentation
+
+- `docs/INSTALL_AND_RUN.md` - basic download, install, run, and verification procedure.
+- `docs/VERSION_INFO.md` - package date, provenance, and review status.
+
 ## Attribution
 
 Contributor: Prosaic Alto

@@ -1,4 +1,7 @@
 # Documentation
 
-Place the PMC-Eight ALPACA Server user guide, installation procedure, screenshots, and release notes here.
+This folder contains user-facing documentation for the PMC-Eight ALPACA Server community project.
+
+- `INSTALL_AND_RUN.md` - basic download, install, run, and verification procedure.
+- `VERSION_INFO.md` - package date, provenance, and review status.
 
