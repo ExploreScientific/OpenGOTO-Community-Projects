@@ -10,11 +10,27 @@ The goal of this repository is to provide a visible, organized, and reviewable p
 
 This repository is not a replacement for the official PMC-Eight firmware, ASCOM driver, INDI driver, or ExploreStars Envision repositories. It is for community-developed tools and utilities that may be useful to PMC-Eight users.
 
+## Repository Layout
+
+Each community project lives in its own folder under `projects/`.
+
+Recommended project layout:
+
+| Path | Purpose |
+| --- | --- |
+| `projects/<project-name>/README.md` | Project overview, attribution, status, and user-facing summary. |
+| `projects/<project-name>/docs/` | User documentation, installation notes, screenshots, and release notes. |
+| `projects/<project-name>/installers/` | Installer packages, executable archives, or links to release artifacts. |
+| `projects/<project-name>/source/` | Source code, if the contributor authorizes public source release. |
+| `projects/<project-name>/checksums/` | SHA-256 checksum files for binaries, installers, and archives. |
+
+This keeps all OpenGOTO community projects together while still giving each project a clean, independent structure.
+
 ## Current Projects
 
 | Project | Contributor | Status | Repository |
 | --- | --- | --- | --- |
-| PMC-Eight ALPACA Server | Prosaic Alto | Pending import and review | PMC-Eight-ALPACA-Server |
+| PMC-Eight ALPACA Server | Prosaic Alto | Pending import and review | `projects/PMC-Eight-ALPACA-Server` |
 
 ## Publication Requirements
 
@@ -38,4 +54,3 @@ Community projects should be reviewed by Explore Scientific before public announ
 ## Public Support Notice
 
 Unless a project is explicitly identified as officially supported by Explore Scientific, community projects should be treated as community contributions. Explore Scientific may host or reference them as a convenience to PMC-Eight users while preserving appropriate contributor credit.
-

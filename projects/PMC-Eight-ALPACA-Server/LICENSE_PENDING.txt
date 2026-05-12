@@ -1,0 +1,4 @@
+License pending.
+
+Do not publish source code or redistribute third-party binaries from this repository until Prosaic Alto has provided explicit license or redistribution permission.
+
