@@ -41,7 +41,9 @@ Before files are announced publicly, confirm:
 
 | File | Purpose |
 | --- | --- |
-| `installers/publish-win-x64.zip` | Windows x64 published ALPACA Server package. |
+| `installers/publish-win-x64/` | Expanded Windows x64 published ALPACA Server package. |
+
+The original `publish-win-x64.zip` archive was expanded into the repository and removed from the current repository tree. The large `ASCOM.ES_PMC8.exe` file is tracked with Git LFS because it exceeds GitHub's normal per-file size limit for standard Git objects.
 
 Checksums are listed in `checksums/SHA256SUMS.md`.
 
