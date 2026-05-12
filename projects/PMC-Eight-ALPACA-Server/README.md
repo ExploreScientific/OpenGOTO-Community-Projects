@@ -12,7 +12,7 @@ This Groups.io files area may require a signed-in Groups.io account with access 
 
 ## Project Status
 
-Status: Groups.io artifacts imported locally; pending contributor permission confirmation, license clarification, and Explore Scientific review before public release.
+Status: Groups.io artifacts imported locally; contributor permission to host and redistribute the submitted files has been received; pending final Explore Scientific review before public release.
 
 ## Intended Purpose
 
@@ -20,14 +20,13 @@ The PMC-Eight ALPACA Server is expected to provide Alpaca-compatible network acc
 
 ## Before Public Release
 
-Before files are published in this repository, confirm:
+Before files are announced publicly, confirm:
 
-1. Prosaic Alto grants permission for Explore Scientific to host and redistribute the submitted files.
-2. The license or redistribution terms are included in the repository.
-3. The imported files match the version intended for public release.
-4. Any installer or executable has a SHA-256 checksum.
-5. Installation and operating instructions are included.
-6. The package does not include private credentials, private firmware source, or unrelated copyrighted material.
+1. Contributor redistribution permission is documented in this repository.
+2. The imported files match the version intended for public release.
+3. Any installer or executable has a SHA-256 checksum.
+4. Installation and operating instructions are included.
+5. The package does not include private credentials, private firmware source, or unrelated copyrighted material.
 
 ## Repository Layout
 
