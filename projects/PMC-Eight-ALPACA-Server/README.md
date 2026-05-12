@@ -2,7 +2,7 @@
 
 This repository is intended to host the PMC-Eight ALPACA Server project contributed by Prosaic Alto from the PMC-Eight community.
 
-The project files are pending import from the Groups.io Mounts sub-forum files section.
+The submitted ALPACA Server package has been imported into this local repository from the Groups.io MOUNTS sub-forum files section.
 
 Known source location:
 
@@ -16,7 +16,7 @@ Status: Groups.io artifacts imported locally; contributor permission to host and
 
 ## Intended Purpose
 
-The PMC-Eight ALPACA Server is expected to provide Alpaca-compatible network access for Explore Scientific PMC-Eight telescope mounts. The final description should be verified against the submitted project documentation after the files are imported.
+The PMC-Eight ALPACA Server is expected to provide Alpaca-compatible network access for Explore Scientific PMC-Eight telescope mounts. The final description should be verified against the submitted project documentation during Explore Scientific review.
 
 ## Before Public Release
 
