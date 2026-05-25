@@ -31,6 +31,7 @@ This keeps all OpenGOTO community projects together while still giving each proj
 | Project | Contributor | Status | Repository |
 | --- | --- | --- | --- |
 | PMC-Eight ALPACA Server | Prosaic Alto | Package imported; redistribution permission received; Explore Scientific review complete | `projects/PMC-Eight-ALPACA-Server` |
+| PMC8 Dashboard | Wes McDonald | Project scaffold created; redistribution and source-publication approval received; import pending | `projects/PMC8-Dashboard` |
 
 ## Publication Requirements
 
