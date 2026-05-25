@@ -6,7 +6,11 @@ PMC8 Dashboard is a community utility by Wes McDonald for working with Explore S
 
 - Source import completed: May 25, 2026
 - Imported from: Wes McDonald's current PMC8 Dashboard release packages and `wesmcd6/pmc8-tools` Dashboard branch review
-- Current Explore Scientific release status: release packaging pending
+- Current Explore Scientific release: `pmc8-dashboard-v0.1.0`
+
+Release page:
+
+https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-dashboard-v0.1.0
 
 ## Project Layout
 
