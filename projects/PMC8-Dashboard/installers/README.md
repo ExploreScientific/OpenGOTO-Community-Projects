@@ -1,9 +1,9 @@
-# Installers and Release Packages
+# PMC8 Dashboard Launch Helpers
 
-Use GitHub Releases for public Dashboard download ZIPs. This folder may contain packaging notes, build scripts, or small release-staging documentation.
+This directory contains launch and distribution helper files from the current PMC8 Dashboard release packages.
 
-Planned release assets:
+- `windows/run_dashboard_windows.bat`
+- `macos/run_dashboard_macos.command`
+- `DISTRIBUTION_README.txt`
 
-- `OpenGOTO-PMC8-Dashboard-Windows.zip`
-- `OpenGOTO-PMC8-Dashboard-macOS.zip`
-- `SHA256SUMS.txt`
+The downloadable release ZIPs should be attached to GitHub Releases rather than committed as large binary distribution archives.

@@ -1,5 +1,15 @@
-# Source
+# PMC8 Dashboard Source
 
-Place PMC8 Dashboard source code here.
+The Dashboard source is organized by platform to preserve the exact behavior of the current release packages.
 
-Contributor/source-publication approval has been received from Wes McDonald. Before public announcement, confirm that the imported source includes appropriate license terms, third-party notices, and no private credentials, private firmware source, or unrelated proprietary files.
+## Windows
+
+`source/windows/` contains the Windows Dashboard Python source and `p1_loader.py`, a pure-Python Propeller firmware loader used by the Windows upload workflow.
+
+## macOS
+
+`source/macos/` contains the macOS Dashboard Python source, `propeller_uploader.py`, and the bundled `p1load_package` helper used by the macOS upload workflow.
+
+## Maintenance Guidance
+
+When Wes publishes a Dashboard update, compare both platform release packages and refresh the matching platform source directory. If the platform packages are unified upstream later, this directory can be simplified.

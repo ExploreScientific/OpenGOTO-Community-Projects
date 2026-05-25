@@ -1,9 +1,6 @@
-# Documentation
+# PMC8 Dashboard Documentation
 
-Place PMC8 Dashboard user documentation, installation notes, release notes, and screenshots here.
-
-Planned initial documents:
+This directory contains the current PMC8 Dashboard user manual imported from the shipped Dashboard release package.
 
 - `PMC8_Dashboard_User_Manual.html`
 - `PMC8_Dashboard_User_Manual.txt`
-- release notes for `v0.1.0`
