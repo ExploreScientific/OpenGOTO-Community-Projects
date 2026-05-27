@@ -10,7 +10,7 @@ Each tool lives on its own branch, and user-facing packages are published as Git
 
 ## Project Status
 
-Status: Upstream tool collection identified; current release index documented; selected OpenGOTO release mirrors published.
+Status: Upstream tool collection identified; current release index documented; selected OpenGOTO release mirrors published; public source/documentation snapshot imported with contributor permission.
 
 ## Current Upstream Releases
 
