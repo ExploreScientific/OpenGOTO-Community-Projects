@@ -32,6 +32,8 @@ This keeps all OpenGOTO community projects together while still giving each proj
 | --- | --- | --- | --- |
 | PMC-Eight ALPACA Server | Prosaic Alto | Package imported; redistribution permission received; Explore Scientific review complete | `projects/PMC-Eight-ALPACA-Server` |
 | PMC8 Dashboard | Wes McDonald | Source, documentation, notices, launch helpers, and v0.1.0 release published | `projects/PMC8-Dashboard` |
+| PMC8 Home Network Config | Wes McDonald | Documentation, notices, checksums, and v1.0 release mirrored | `projects/PMC8-Home-Network-Config` |
+| Spiral Search Bridge | Wes McDonald | Documentation, notices, checksums, and v2.0 release mirrored | `projects/Spiral-Search-Bridge` |
 
 ## Publication Requirements
 
