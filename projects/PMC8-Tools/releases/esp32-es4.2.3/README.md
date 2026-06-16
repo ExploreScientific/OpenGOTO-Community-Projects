@@ -13,6 +13,11 @@ https://github.com/wesmcd6/pmc8-tools
 | `pmc8-esp32-ota-20260615-8a0910f.zip` | `esp32-ota` | `c6c455c` | Recommended OTA update path when the ESP32 already supports OTA. |
 | `pmc8-esp32-serial-flash-20260615-4f17190.zip` | `esp32-serial-flash` | `cdc3b5d` | Fallback full serial flash path when OTA is not possible. |
 
+Stable current-download aliases for website links:
+
+- `pmc8-esp32-ota.zip`: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/download/pmc8-esp32-current/pmc8-esp32-ota.zip
+- `pmc8-esp32-serial-flash.zip`: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/download/pmc8-esp32-current/pmc8-esp32-serial-flash.zip
+
 ## Verified Firmware
 
 Both upstream manifests identify the ESP32 firmware as:

@@ -20,8 +20,8 @@ Status: Upstream tool collection identified; current release index documented; s
 | Spiral Search Bridge | `spiral-search` | https://github.com/wesmcd6/pmc8-tools/releases/tag/spiralsearch-v2.0 | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/spiralsearch-v2.0 |
 | PMC8 Dashboard | `pmc8-dashboard` | https://github.com/wesmcd6/pmc8-tools/releases/tag/pmc8-dashboard-v0.1.0 | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-dashboard-v0.1.0 |
 | PMC-Eight UFCT | `pmc8-ufct` | https://github.com/wesmcd6/pmc8-tools/releases/tag/pmc8-ufct-v2.1 | Official Explore Scientific UFCT release is maintained separately: https://github.com/ExploreScientific/PMC-Eight-UFCT/releases/latest |
-| ESP32 OTA Update ES4.2.3 | `esp32-ota` | https://github.com/wesmcd6/pmc8-tools/tree/esp32-ota | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-esp32-es4.2.3 |
-| ESP32 Serial Flash ES4.2.3 | `esp32-serial-flash` | https://github.com/wesmcd6/pmc8-tools/tree/esp32-serial-flash | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-esp32-es4.2.3 |
+| ESP32 OTA Update ES4.2.3 | `esp32-ota` | https://github.com/wesmcd6/pmc8-tools/tree/esp32-ota | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/download/pmc8-esp32-current/pmc8-esp32-ota.zip |
+| ESP32 Serial Flash ES4.2.3 | `esp32-serial-flash` | https://github.com/wesmcd6/pmc8-tools/tree/esp32-serial-flash | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/download/pmc8-esp32-current/pmc8-esp32-serial-flash.zip |
 
 ## Tool Notes
 
