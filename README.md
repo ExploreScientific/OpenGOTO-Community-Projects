@@ -35,6 +35,13 @@ This keeps all OpenGOTO community projects together while still giving each proj
 | PMC8 Dashboard | Wes McDonald | Source, documentation, notices, launch helpers, and v0.1.0 release published | `projects/PMC8-Dashboard` |
 | Spiral Search Bridge | Wes McDonald | Documentation, notices, checksums, and v2.0 release mirrored | `projects/Spiral-Search-Bridge` |
 
+## Firmware Update Notice
+
+The current PMC-Eight ESP32 Wi-Fi firmware update packages mirrored here are ES4.2.3. Use the OTA package first when the ESP32 already supports OTA updates, and use the serial-flash package only as the fallback path for missing, corrupted, or too-old ESP32 firmware.
+
+- OTA update: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/download/pmc8-esp32-current/pmc8-esp32-ota.zip
+- Serial-flash fallback: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/download/pmc8-esp32-current/pmc8-esp32-serial-flash.zip
+
 ## Publication Requirements
 
 Before any project is published here, the following information should be captured:
