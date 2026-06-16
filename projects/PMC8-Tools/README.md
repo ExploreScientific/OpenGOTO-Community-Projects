@@ -20,10 +20,14 @@ Status: Upstream tool collection identified; current release index documented; s
 | Spiral Search Bridge | `spiral-search` | https://github.com/wesmcd6/pmc8-tools/releases/tag/spiralsearch-v2.0 | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/spiralsearch-v2.0 |
 | PMC8 Dashboard | `pmc8-dashboard` | https://github.com/wesmcd6/pmc8-tools/releases/tag/pmc8-dashboard-v0.1.0 | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-dashboard-v0.1.0 |
 | PMC-Eight UFCT | `pmc8-ufct` | https://github.com/wesmcd6/pmc8-tools/releases/tag/pmc8-ufct-v2.1 | Official Explore Scientific UFCT release is maintained separately: https://github.com/ExploreScientific/PMC-Eight-UFCT/releases/latest |
+| ESP32 OTA Update ES4.2.3 | `esp32-ota` | https://github.com/wesmcd6/pmc8-tools/tree/esp32-ota | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-esp32-es4.2.3 |
+| ESP32 Serial Flash ES4.2.3 | `esp32-serial-flash` | https://github.com/wesmcd6/pmc8-tools/tree/esp32-serial-flash | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-esp32-es4.2.3 |
 
 ## Tool Notes
 
 - PMC8 Home Network Config is a Windows utility that configures ESP32, ESP8266, or RN-131 PMC-Eight WiFi modules to join a home network.
+- ESP32 OTA Update ES4.2.3 is the recommended update path for PMC-Eight ESP32 Wi-Fi firmware when OTA is already supported.
+- ESP32 Serial Flash ES4.2.3 is the fallback package for ESP32 modules with missing, corrupted, or too-old firmware for OTA.
 - Spiral Search Bridge is a cross-platform ASCOM Alpaca spiral-search automation tool.
 - PMC8 Dashboard has its own OpenGOTO project folder because source, documentation, notices, launch helpers, and release ZIPs were imported into the Explore Scientific OpenGOTO structure.
 - Envision release assets in Wes's tool repo are not mirrored here as community tools; Explore Scientific maintains the public Envision release-only repository separately.
