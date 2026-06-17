@@ -12,23 +12,35 @@ Repository location:
 
 ## Imported Package
 
-Imported package folder:
+Current upstream release:
 
-`publish-win-x64`
+`v1.2.2`
 
-Primary executable:
+Upstream release URL:
 
-`ASCOM.ES_PMC8.exe`
+https://github.com/nigeldun/ES_PMC8_ALPACA/releases/tag/v1.2.2
 
-Executable timestamp from submitted package:
+Explore Scientific mirror release:
 
-June 20, 2025 14:06:58
+https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc-eight-alpaca-server-v1.2.2
 
-Source folder name observed in local downloads:
+Upstream published date:
 
-`PMC-Eight ALPACA Driver 06222025`
+2026-06-04 17:13:31 UTC
 
-The package does not currently include standalone source files such as `.cs`, `.csproj`, `.sln`, `.razor`, or `.cshtml` files. It is being hosted as a published executable package.
+Mirror date:
+
+2026-06-17
+
+Mirrored release artifacts:
+
+| Platform | Artifact | Bytes |
+| --- | --- | ---: |
+| Windows x64 | `publish-win-x64.zip` | 68,958,245 |
+| Linux x64 | `publish-linux-x64.zip` | 55,666,835 |
+| Linux ARM64 | `publish-linux-arm64.zip` | 53,247,415 |
+| macOS x64 | `publish-macos-x64.zip` | 56,112,788 |
+| macOS ARM64 | `publish-macos-arm64.zip` | 53,638,533 |
 
 ## Review And Redistribution
 
@@ -40,7 +52,6 @@ Explore Scientific review status: Complete.
 
 Recommended public release label:
 
-`PMC-Eight ALPACA Server 2025.06.22 Community Package`
+`PMC-Eight ALPACA Server v1.2.2 Community Mirror`
 
-This label is based on the submitted package folder name and is intended as a practical release identifier, not as a source-code semantic version.
-
+This label follows the upstream semantic version tag so the README and GitHub Release can be compared directly against the upstream release page.

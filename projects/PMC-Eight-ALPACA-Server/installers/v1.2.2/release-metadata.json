@@ -1,0 +1,50 @@
+{
+  "upstream_repository": "nigeldun/ES_PMC8_ALPACA",
+  "upstream_release_url": "https://github.com/nigeldun/ES_PMC8_ALPACA/releases/tag/v1.2.2",
+  "upstream_tag": "v1.2.2",
+  "upstream_release_name": "v1.2.2",
+  "upstream_published_at": "2026-06-04T17:13:31Z",
+  "mirrored_at": "2026-06-17T14:22:36Z",
+  "assets": [
+    {
+      "name": "publish-linux-arm64.zip",
+      "size": 53247415,
+      "sha256": "96f92ea4d1de3fd1275cfe4fb0325f35023b7001e673492395e28b070ae0a2bb",
+      "upstream_url": "https://github.com/nigeldun/ES_PMC8_ALPACA/releases/download/v1.2.2/publish-linux-arm64.zip",
+      "upstream_asset_id": 438491363,
+      "content_type": "application/zip"
+    },
+    {
+      "name": "publish-linux-x64.zip",
+      "size": 55666835,
+      "sha256": "6dcad27eb23c7f12e0afa89e216ce02a3f71ce7df285259f833d55f2bd6a0195",
+      "upstream_url": "https://github.com/nigeldun/ES_PMC8_ALPACA/releases/download/v1.2.2/publish-linux-x64.zip",
+      "upstream_asset_id": 438491309,
+      "content_type": "application/zip"
+    },
+    {
+      "name": "publish-macos-arm64.zip",
+      "size": 53638533,
+      "sha256": "e61fc92028eda59258d918c43ae2952d7a5cb8f0608196ef389fefe986d8f8ad",
+      "upstream_url": "https://github.com/nigeldun/ES_PMC8_ALPACA/releases/download/v1.2.2/publish-macos-arm64.zip",
+      "upstream_asset_id": 438490989,
+      "content_type": "application/zip"
+    },
+    {
+      "name": "publish-macos-x64.zip",
+      "size": 56112788,
+      "sha256": "7370a7476eec449895b87ab3dc3392f091d049378e115e35fae384a4e273f46b",
+      "upstream_url": "https://github.com/nigeldun/ES_PMC8_ALPACA/releases/download/v1.2.2/publish-macos-x64.zip",
+      "upstream_asset_id": 438491396,
+      "content_type": "application/zip"
+    },
+    {
+      "name": "publish-win-x64.zip",
+      "size": 68958245,
+      "sha256": "900157108fc70017a2ceadaff322b682f54030f78e9d6c02d34c66ae5eb3bb3b",
+      "upstream_url": "https://github.com/nigeldun/ES_PMC8_ALPACA/releases/download/v1.2.2/publish-win-x64.zip",
+      "upstream_asset_id": 438493224,
+      "content_type": "application/zip"
+    }
+  ]
+}

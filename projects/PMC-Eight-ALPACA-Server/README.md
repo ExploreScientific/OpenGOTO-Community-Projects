@@ -1,18 +1,14 @@
 # PMC-Eight ALPACA Server
 
-This repository is intended to host the PMC-Eight ALPACA Server project contributed by Prosaic Alto from the PMC-Eight community.
+This repository hosts the PMC-Eight ALPACA Server project contributed by the PMC-Eight community and mirrored for Explore Scientific OpenGOTO users.
 
-The submitted ALPACA Server package has been imported into this repository from the Groups.io MOUNTS sub-forum files section.
+The current mirrored release is imported from the upstream GitHub project:
 
-Known source location:
-
-- https://espmc-eight.groups.io/g/MOUNTS/files/Alpaca%20Driver
-
-This Groups.io files area may require a signed-in Groups.io account with access to the MOUNTS sub-group.
+- https://github.com/nigeldun/ES_PMC8_ALPACA/releases/tag/v1.2.2
 
 ## Project Status
 
-Status: ALPACA Server package imported; contributor permission to host and redistribute the submitted files has been received; Explore Scientific review is complete.
+Status: Upstream v1.2.2 release mirrored for Windows, Linux, and macOS; contributor permission to host and redistribute the previously submitted files has been received.
 
 ## Intended Purpose
 
@@ -39,19 +35,31 @@ Explore Scientific review has confirmed:
 
 ## Imported Artifacts
 
-| File | Purpose |
+Current upstream version: `v1.2.2`
+
+Mirror date: 2026-06-17
+
+| Platform | Release artifact |
 | --- | --- |
-| `installers/publish-win-x64/` | Expanded Windows x64 published ALPACA Server package. |
+| Windows x64 | `publish-win-x64.zip` |
+| Linux x64 | `publish-linux-x64.zip` |
+| Linux ARM64 | `publish-linux-arm64.zip` |
+| macOS x64 | `publish-macos-x64.zip` |
+| macOS ARM64 | `publish-macos-arm64.zip` |
 
-The original `publish-win-x64.zip` archive was expanded into the repository and removed from the current repository tree. The large `ASCOM.ES_PMC8.exe` file is tracked with Git LFS because it exceeds GitHub's normal per-file size limit for standard Git objects.
+The release archives are attached to the GitHub Release instead of committed directly to the repository. Local administrator downloads are kept under `installers/v1.2.2/` for verification and upload staging.
 
-Checksums are listed in `checksums/SHA256SUMS.md`.
+SHA-256 checksums are listed in `checksums/SHA256SUMS.md`.
 
 ## Current Release
 
 Recommended user download:
 
-https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc-eight-alpaca-server-2025.06.22
+https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc-eight-alpaca-server-v1.2.2
+
+Upstream source release:
+
+https://github.com/nigeldun/ES_PMC8_ALPACA/releases/tag/v1.2.2
 
 ## User Documentation
 
@@ -60,6 +68,6 @@ https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pm
 
 ## Attribution
 
-Contributor: Prosaic Alto
+Contributor: Prosaic Alto / upstream maintainer nigeldun
 
 OpenGOTO community project hosted for PMC-Eight users by Explore Scientific.

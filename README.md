@@ -30,10 +30,36 @@ This keeps all OpenGOTO community projects together while still giving each proj
 
 | Project | Contributor | Status | Repository |
 | --- | --- | --- | --- |
-| PMC-Eight ALPACA Server | Prosaic Alto | Package imported; redistribution permission received; Explore Scientific review complete | `projects/PMC-Eight-ALPACA-Server` |
+| PMC-Eight ALPACA Server | Prosaic Alto / upstream maintainer nigeldun | Current upstream release v1.2.2 mirrored for Windows, Linux, and macOS | `projects/PMC-Eight-ALPACA-Server` |
 | PMC8 Tools | Wes McDonald | Public multi-branch tool collection indexed; selected release mirrors published | `projects/PMC8-Tools` |
 | PMC8 Dashboard | Wes McDonald | Source, documentation, notices, launch helpers, and v0.1.0 release published | `projects/PMC8-Dashboard` |
 | Spiral Search Bridge | Wes McDonald | Documentation, notices, checksums, and v2.0 release mirrored | `projects/Spiral-Search-Bridge` |
+
+## Latest PMC-Eight ALPACA Server Mirror
+
+Current mirrored upstream version: `v1.2.2`
+
+Upstream release:
+
+https://github.com/nigeldun/ES_PMC8_ALPACA/releases/tag/v1.2.2
+
+Explore Scientific mirror release:
+
+https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc-eight-alpaca-server-v1.2.2
+
+Mirror date: 2026-06-17
+
+Included release artifacts:
+
+| Platform | Artifact |
+| --- | --- |
+| Windows x64 | `publish-win-x64.zip` |
+| Linux x64 | `publish-linux-x64.zip` |
+| Linux ARM64 | `publish-linux-arm64.zip` |
+| macOS x64 | `publish-macos-x64.zip` |
+| macOS ARM64 | `publish-macos-arm64.zip` |
+
+Verification hashes are listed in `projects/PMC-Eight-ALPACA-Server/checksums/SHA256SUMS.md`.
 
 ## Firmware Update Notice
 
