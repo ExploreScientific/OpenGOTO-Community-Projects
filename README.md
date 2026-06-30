@@ -32,7 +32,7 @@ This keeps all OpenGOTO community projects together while still giving each proj
 | --- | --- | --- | --- |
 | PMC-Eight ALPACA Server | Prosaic Alto / upstream maintainer nigeldun | Current upstream release v1.2.2 mirrored for Windows, Linux, and macOS | `projects/PMC-Eight-ALPACA-Server` |
 | PMC8 Tools | Wes McDonald | Public multi-branch tool collection indexed; selected release mirrors published | `projects/PMC8-Tools` |
-| PMC8 Dashboard | Wes McDonald | Source, documentation, notices, launch helpers, and v0.1.0 release published | `projects/PMC8-Dashboard` |
+| PMC8 Dashboard | Wes McDonald | Source, documentation, notices, launch helpers, and v0.2.0 release published | `projects/PMC8-Dashboard` |
 | Spiral Search Bridge | Wes McDonald | Documentation, notices, checksums, and v2.0 release mirrored | `projects/Spiral-Search-Bridge` |
 
 ## Latest PMC-Eight ALPACA Server Mirror

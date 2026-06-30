@@ -4,11 +4,11 @@ The Dashboard source is organized by platform to preserve the exact behavior of 
 
 ## Windows
 
-`source/windows/` contains the Windows Dashboard Python source and `p1_loader.py`, a pure-Python Propeller firmware loader used by the Windows upload workflow.
+`source/windows/` contains the Windows Dashboard Python source, `network_management.py`, and `p1_loader.py`, a pure-Python Propeller firmware loader used by the Windows upload workflow.
 
 ## macOS
 
-`source/macos/` contains the macOS Dashboard Python source, `propeller_uploader.py`, and the bundled `p1load_package` helper used by the macOS upload workflow.
+`source/macos/` contains the macOS Dashboard Python source, `network_management.py`, `p1_loader.py`, and the bundled `p1load_package` helper used by the macOS upload workflow.
 
 ## Maintenance Guidance
 
