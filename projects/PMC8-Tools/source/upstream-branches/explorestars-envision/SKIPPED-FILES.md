@@ -1,5 +1,7 @@
 # Skipped Files
 
-The following files from Wes McDonald's upstream `explorestars-envision` branch were not copied into git because they are binary release assets, firmware payloads, images, PDFs, packaged dependencies, or executable artifacts. Use the release links in the project index for customer downloads.
+Snapshot source: wesmcd6/pmc8-tools branch $b at $full.
 
-- `images/ui/thumbpad.jpg`
+The following files were omitted from this git snapshot because customer-facing binaries, firmware payloads, images, PDFs, installers, and packaged dependencies are distributed as release assets instead of source files.
+
+- images\ui\thumbpad.jpg (27756 bytes)

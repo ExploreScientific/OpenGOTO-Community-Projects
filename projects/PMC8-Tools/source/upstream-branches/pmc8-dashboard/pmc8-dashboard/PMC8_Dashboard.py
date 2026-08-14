@@ -10,6 +10,7 @@ DOCS_DIR = APP_DIR / "docs"
 ASSETS_DIR = APP_DIR / "assets"
 MANUAL_HTML = DOCS_DIR / "PMC8_Dashboard_User_Manual.html"
 MANUAL_TXT = DOCS_DIR / "PMC8_Dashboard_User_Manual.txt"
+APP_VERSION = "0.2.6"
 
 
 def _is_readable_file(path):
@@ -105,7 +106,7 @@ try:
     from PyQt6.QtWidgets import (
         QApplication, QWidget, QVBoxLayout, QLabel, QPushButton,
         QComboBox, QTextEdit, QFormLayout, QLineEdit, QHBoxLayout, QGridLayout, QSpacerItem, QSizePolicy,
-        QGridLayout, QDialog, QFileDialog, QCheckBox, QScrollArea
+        QGridLayout, QDialog, QFileDialog, QCheckBox, QScrollArea, QTabWidget
     )
     from PyQt6.QtGui import QTextCursor
 except ModuleNotFoundError as exc:
@@ -113,7 +114,9 @@ except ModuleNotFoundError as exc:
         print_dependency_help("PMC8 Dashboard", "PyQt6")
         sys.exit(1)
     raise
+from p1_loader import upload
 from upload_dialog import UploadDialog
+from network_management import NetworkManagementMixin
 
 
 
@@ -282,6 +285,16 @@ COMMANDS = {
         "template": "ESGi!",
         "params": []
     },
+    "ESGe!": {
+        "desc": "Get Envision (Fast Server) status. 3-bit field: 1 = capable, 2 = boot flag, 4 = currently on",
+        "template": "ESGe!",
+        "params": []
+    },
+    "ESSe<p>!": {
+        "desc": "Set Envision (Fast Server). p = 0 (stop now), 1 (start now), 3 (boot on), 4 (boot off)",
+        "template": "ESSe{p}!",
+        "params": [{"name": "p", "label": "Value (0 = stop, 1 = start, 3 = boot on, 4 = boot off)"}]
+    },
     "ESSi!": {
         "desc": "Set PMC8 Configuration settings (computed from fields)",
         "template": "",  # Built dynamically.
@@ -289,7 +302,7 @@ COMMANDS = {
     }
 }
 
-class PMC8Configurator(QWidget):
+class PMC8Configurator(NetworkManagementMixin, QWidget):
     def __init__(self):
         super().__init__()
         self.param_widgets = {}      # For command parameters.
@@ -297,12 +310,17 @@ class PMC8Configurator(QWidget):
         self.config_populated = False
         self.connection_socket = None  # For WiFi connections.
         self.serial_port = None      # For serial connections.
+        # Fast Server (WiFi fast-server boot) state, populated by Get Configuration.
+        self._wifi_type = None       # "RN131" / "8266" / "ESP32" / "Unknown"
+        self._fast_server_state = None   # last ESGe! digit: 0/1/2 or None
+        self._fast_server_available = False  # True when the boot option can be set
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle("PMC-Eight Dashboard")
+        self.setWindowTitle(f"PMC-Eight Dashboard v{APP_VERSION}")
         self.resize(960, 820)
-        self.setMinimumSize(820, 680)
+        self.setMinimumSize(660, 520)
+        self.resize(720, 764)
 
         outer_layout = QVBoxLayout()
         outer_layout.setContentsMargins(0, 0, 0, 0)
@@ -312,12 +330,12 @@ class PMC8Configurator(QWidget):
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         page = QWidget()
         main_layout = QVBoxLayout(page)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(18)
+        main_layout.setContentsMargins(14, 8, 14, 8)
+        main_layout.setSpacing(6)
 
-        title = QLabel("PMC-Eight Dashboard")
+        title = QLabel(f"PMC-Eight Dashboard v{APP_VERSION}")
         title.setObjectName("TitleLabel")
-        subtitle = QLabel("Configuration, command console, and Propeller firmware upload")
+        subtitle = QLabel("Configuration, command console, Network tools, and Propeller firmware upload")
         subtitle.setObjectName("SubtitleLabel")
         main_layout.addWidget(title)
         main_layout.addWidget(subtitle)
@@ -326,39 +344,39 @@ class PMC8Configurator(QWidget):
         connection_panel = QWidget()
         connection_panel.setObjectName("Panel")
         connection_layout = QVBoxLayout(connection_panel)
-        connection_layout.setContentsMargins(18, 18, 18, 18)
-        connection_layout.setSpacing(14)
+        connection_layout.setContentsMargins(12, 6, 12, 6)
+        connection_layout.setSpacing(8)
         connection_header = QLabel("Connection")
         connection_header.setObjectName("SectionHeader")
         connection_layout.addWidget(connection_header)
 
         connection_grid = QGridLayout()
-        connection_grid.setHorizontalSpacing(14)
-        connection_grid.setVerticalSpacing(12)
+        connection_grid.setHorizontalSpacing(10)
+        connection_grid.setVerticalSpacing(8)
         connection_layout.addLayout(connection_grid)
 
         type_label = QLabel("Type")
-        type_label.setMinimumWidth(100)
+        type_label.setMinimumWidth(76)
         self.connection_type_combo = QComboBox()
-        self.connection_type_combo.setMinimumWidth(180)
+        self.connection_type_combo.setMinimumWidth(150)
         self.connection_type_combo.addItems(["Serial", "WiFi"])
         self.connection_type_combo.currentIndexChanged.connect(self.update_connection_ui)
         connection_grid.addWidget(type_label, 0, 0)
         connection_grid.addWidget(self.connection_type_combo, 0, 1)
 
         self.serial_port_label = QLabel("Serial Port")
-        self.serial_port_label.setMinimumWidth(100)
+        self.serial_port_label.setMinimumWidth(76)
         self.port_combo = QComboBox()
-        self.port_combo.setMinimumWidth(320)
+        self.port_combo.setMinimumWidth(240)
         self.refresh_ports()
         connection_grid.addWidget(self.serial_port_label, 1, 0)
         connection_grid.addWidget(self.port_combo, 1, 1, 1, 3)
 
         self.ip_label = QLabel("IP Address")
-        self.ip_label.setMinimumWidth(100)
+        self.ip_label.setMinimumWidth(76)
         self.ip_edit = QLineEdit()
         self.ip_edit.setPlaceholderText("192.168.47.1")
-        self.ip_edit.setMinimumWidth(220)
+        self.ip_edit.setMinimumWidth(180)
         connection_grid.addWidget(self.ip_label, 2, 0)
         connection_grid.addWidget(self.ip_edit, 2, 1)
 
@@ -386,6 +404,7 @@ class PMC8Configurator(QWidget):
         self.connect_button.clicked.connect(self.connect_device)
         self.disconnect_button = QPushButton("Disconnect")
         self.disconnect_button.clicked.connect(self.disconnect_device)
+        self.disconnect_button.setEnabled(False)   # nothing connected at startup
         self.refresh_button = QPushButton("Refresh Ports")
         self.refresh_button.clicked.connect(self.refresh_ports)
         button_row.addWidget(self.connect_button)
@@ -399,8 +418,8 @@ class PMC8Configurator(QWidget):
         actions_panel = QWidget()
         actions_panel.setObjectName("Panel")
         actions_layout = QVBoxLayout(actions_panel)
-        actions_layout.setContentsMargins(18, 18, 18, 18)
-        actions_layout.setSpacing(12)
+        actions_layout.setContentsMargins(12, 6, 12, 6)
+        actions_layout.setSpacing(8)
         actions_header = QLabel("Configuration Actions")
         actions_header.setObjectName("SectionHeader")
         actions_layout.addWidget(actions_header)
@@ -426,12 +445,25 @@ class PMC8Configurator(QWidget):
         command_panel = QWidget()
         command_panel.setObjectName("Panel")
         command_layout = QVBoxLayout(command_panel)
-        command_layout.setContentsMargins(18, 18, 18, 18)
-        command_layout.setSpacing(12)
+        command_layout.setContentsMargins(12, 6, 12, 6)
+        command_layout.setSpacing(8)
         command_header = QLabel("Command Console")
         command_header.setObjectName("SectionHeader")
         command_layout.addWidget(command_header)
+        # Two separate inputs on purpose: this combo picks from the known-command
+        # list, and the raw box below types anything else. It used to be a single
+        # editable combo doing both jobs, but on macOS the embedded line edit
+        # never took a click — every click just dropped the list, so a raw command
+        # could not be typed at all. A plain QLineEdit is predictable everywhere,
+        # and it also means the list selection no longer has to be reverse-
+        # engineered from the visible text (see _resolve_command_to_send).
         self.command_combo = QComboBox()
+        self.command_combo.setObjectName("CommandCombo")
+        # Don't let the longest item ("ESGi! - Retrieve all …") force the whole
+        # window wide. Size to a modest content length; it still fills the panel
+        # width and the dropdown popup shows full item text.
+        self.command_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.command_combo.setMinimumContentsLength(22)
         self.update_command_dropdown()
         self.command_combo.currentIndexChanged.connect(self.update_command_description)
         self.command_combo.currentIndexChanged.connect(lambda: self.update_param_fields(self.command_combo.currentData()))
@@ -453,6 +485,20 @@ class PMC8Configurator(QWidget):
         self.param_area.setLayout(self.param_layout)
         command_layout.addWidget(self.param_area)
 
+        # Raw command entry — always available, and takes precedence over the
+        # list whenever it has text (see _resolve_command_to_send). Enter sends.
+        raw_row = QHBoxLayout()
+        raw_row.setSpacing(8)
+        raw_label = QLabel("Or type a command:")
+        self.raw_command_edit = QLineEdit()
+        self.raw_command_edit.setObjectName("RawCommandEdit")
+        self.raw_command_edit.setClearButtonEnabled(True)
+        self.raw_command_edit.setPlaceholderText("e.g. ESGe!  — overrides the selection above when not empty")
+        self.raw_command_edit.returnPressed.connect(self.send_command)
+        raw_row.addWidget(raw_label)
+        raw_row.addWidget(self.raw_command_edit, 1)
+        command_layout.addLayout(raw_row)
+
         self.send_button = QPushButton("Send Command")
         self.send_button.clicked.connect(self.send_command)
         command_layout.addWidget(self.send_button)
@@ -462,14 +508,14 @@ class PMC8Configurator(QWidget):
         response_panel = QWidget()
         response_panel.setObjectName("Panel")
         response_layout = QVBoxLayout(response_panel)
-        response_layout.setContentsMargins(18, 18, 18, 18)
-        response_layout.setSpacing(12)
+        response_layout.setContentsMargins(12, 6, 12, 6)
+        response_layout.setSpacing(8)
         response_header = QLabel("Response Log")
         response_header.setObjectName("SectionHeader")
         response_layout.addWidget(response_header)
         self.response_box = QTextEdit()
         self.response_box.setReadOnly(True)
-        self.response_box.setMinimumHeight(170)
+        self.response_box.setMinimumHeight(130)
         response_layout.addWidget(self.response_box)
         main_layout.addWidget(response_panel)
 
@@ -477,22 +523,48 @@ class PMC8Configurator(QWidget):
         config_panel = QWidget()
         config_panel.setObjectName("Panel")
         config_layout = QVBoxLayout(config_panel)
-        config_layout.setContentsMargins(18, 18, 18, 18)
-        config_layout.setSpacing(12)
+        config_layout.setContentsMargins(12, 6, 12, 6)
+        config_layout.setSpacing(8)
         config_header = QLabel("Configuration Settings")
         config_header.setObjectName("SectionHeader")
         config_layout.addWidget(config_header)
         self.config_grid = QGridLayout()
-        self.config_grid.setHorizontalSpacing(24)
-        self.config_grid.setVerticalSpacing(10)
+        self.config_grid.setHorizontalSpacing(14)
+        self.config_grid.setVerticalSpacing(6)
+        # Pack the label/value pairs to the left: give a trailing column all the
+        # slack so the label columns shrink to their text instead of stretching
+        # wide across the panel (that was the "ton of room" after the labels).
+        self.config_grid.setColumnStretch(4, 1)
         config_layout.addLayout(self.config_grid)
+
+        # Fast Server (WiFi fast-server boot) — persistent sub-section. Populated
+        # by Get Configuration (ESGe!) and applied by Save Configuration
+        # (ESSe3! = boot on / ESSe4! = boot off). Not part of the ESGi/ESSi payload.
+        fast_server_grid = QGridLayout()
+        fast_server_grid.setHorizontalSpacing(24)
+        fast_server_grid.setVerticalSpacing(6)
+        self.fast_server_status_caption = QLabel("Fast Server Status:")
+        self.fast_server_status_label = QLabel("—")
+        self.fast_server_checkbox = QCheckBox("Boot into Fast Server")
+        self.fast_server_checkbox.setObjectName("BootCheck")
+        self.fast_server_hint = QLabel("")
+        self.fast_server_hint.setObjectName("HelpLabel")
+        self.fast_server_hint.setWordWrap(True)
+        fast_server_grid.addWidget(self.fast_server_status_caption, 0, 0)
+        fast_server_grid.addWidget(self.fast_server_status_label, 0, 1)
+        fast_server_grid.addWidget(self.fast_server_checkbox, 1, 0, 1, 2)
+        fast_server_grid.addWidget(self.fast_server_hint, 2, 0, 1, 2)
+        config_layout.addSpacing(6)
+        config_layout.addLayout(fast_server_grid)
+        self._fast_server_reset()
+
         main_layout.addWidget(config_panel)
 
         # Firmware upload panel
         upload_panel = QWidget()
         upload_panel.setObjectName("Panel")
         upload_layout = QVBoxLayout(upload_panel)
-        upload_layout.setContentsMargins(18, 18, 18, 18)
+        upload_layout.setContentsMargins(12, 6, 12, 6)
         upload_layout.setSpacing(12)
         upload_header = QLabel("Firmware Upload")
         upload_header.setObjectName("SectionHeader")
@@ -500,14 +572,22 @@ class PMC8Configurator(QWidget):
         upload_buttons = QHBoxLayout()
         self.upload_button = QPushButton("Upload Propeller Code")
         self.upload_button.clicked.connect(self.open_upload_dialog)
+        self.upload_status_label = QLabel("")
+        self.upload_status_label.setObjectName("HelpLabel")
         upload_buttons.addWidget(self.upload_button)
+        upload_buttons.addWidget(self.upload_status_label)
         upload_buttons.addStretch(1)
         upload_layout.addLayout(upload_buttons)
         main_layout.addWidget(upload_panel)
 
         main_layout.addStretch(1)
         scroll.setWidget(page)
-        outer_layout.addWidget(scroll)
+
+        # Tabs: existing UI becomes the "Configurator" tab; add the "Network" tab.
+        self.tabs = QTabWidget()
+        self.tabs.addTab(scroll, "Configurator")
+        self.tabs.addTab(self.build_network_tab(), "Network")
+        outer_layout.addWidget(self.tabs)
         self.setLayout(outer_layout)
         self.update_param_fields(self.command_combo.currentData())
         self.update_connection_ui()
@@ -522,7 +602,7 @@ class PMC8Configurator(QWidget):
                 font-size: 10.5pt;
             }
             QLabel#TitleLabel {
-                font-size: 22pt;
+                font-size: 16pt;
                 font-weight: 700;
                 color: #ffffff;
             }
@@ -530,10 +610,10 @@ class PMC8Configurator(QWidget):
                 color: #9fb0c2;
             }
             QLabel#SectionHeader {
-                font-size: 12pt;
+                font-size: 11pt;
                 font-weight: 700;
                 color: #cfe2f5;
-                padding-bottom: 4px;
+                padding-bottom: 1px;
             }
             QWidget#Panel {
                 background: #15202b;
@@ -541,11 +621,11 @@ class PMC8Configurator(QWidget):
                 border-radius: 8px;
             }
             QLineEdit, QComboBox, QTextEdit {
-                min-height: 34px;
+                min-height: 26px;
                 background: #0b1118;
                 border: 1px solid #31465c;
                 border-radius: 6px;
-                padding: 7px 9px;
+                padding: 4px 8px;
                 color: #f3f7fb;
                 selection-background-color: #2f7dd3;
             }
@@ -560,9 +640,9 @@ class PMC8Configurator(QWidget):
                 background: #223244;
                 border: 1px solid #3a5169;
                 border-radius: 6px;
-                padding: 8px 14px;
+                padding: 3px 14px;
                 color: #eef6ff;
-                min-height: 36px;
+                min-height: 20px;
             }
             QPushButton:hover {
                 background: #2c4056;
@@ -583,7 +663,6 @@ class PMC8Configurator(QWidget):
             QPushButton#PrimaryButton:hover {
                 background: #2c7cc7;
             }
-            QPushButton#DangerButton {
             QPushButton#ConnectedButton {
                 background: #1f8a4c;
                 border-color: #33b86b;
@@ -591,11 +670,93 @@ class PMC8Configurator(QWidget):
             QPushButton#ConnectedButton:hover {
                 background: #27a85d;
             }
+            QPushButton#DangerButton {
                 background: #7d3440;
                 border-color: #a84a5a;
             }
             QPushButton#DangerButton:hover {
                 background: #963f4d;
+            }
+            QCheckBox {
+                spacing: 8px;
+                color: #e8eef5;
+            }
+            QCheckBox:disabled {
+                color: #647383;
+            }
+            QCheckBox::indicator {
+                width: 18px;
+                height: 18px;
+                border: 1px solid #3a5169;
+                border-radius: 4px;
+                background: #0b1118;
+            }
+            QCheckBox::indicator:hover {
+                border-color: #52708f;
+            }
+            QCheckBox::indicator:checked {
+                background: #2166a8;
+                border-color: #3986d1;
+            }
+            QCheckBox::indicator:disabled {
+                border-color: #253342;
+                background: #1a2430;
+            }
+            /* Command console input: clear, bright outline so the editable
+               field is obvious whether or not a command is selected. */
+            QComboBox#CommandCombo {
+                border: 1px solid #4aa3ff;
+            }
+            QComboBox#CommandCombo:focus {
+                border: 1px solid #6bb6ff;
+            }
+            QLineEdit#RawCommandEdit {
+                border: 1px solid #4aa3ff;
+            }
+            QLineEdit#RawCommandEdit:focus {
+                border: 1px solid #6bb6ff;
+            }
+            /* Boot-into-Fast-Server checkbox: red = off, green = on, so its
+               state is unmistakable (the default box was invisible when off). */
+            QCheckBox#BootCheck::indicator {
+                width: 18px;
+                height: 18px;
+                border-radius: 4px;
+                border: 2px solid #e06c5a;
+                background: #4a2320;
+            }
+            QCheckBox#BootCheck::indicator:checked {
+                border: 2px solid #33b86b;
+                background: #1f8a4c;
+            }
+            QCheckBox#BootCheck::indicator:disabled {
+                border: 2px solid #4a5560;
+                background: #222b34;
+            }
+            QTabWidget::pane {
+                background: #0f1720;
+                border: 1px solid #27384a;
+                border-radius: 6px;
+                top: -1px;
+            }
+            QTabBar::tab {
+                background: #15202b;
+                color: #cfe2f5;
+                border: 1px solid #27384a;
+                border-bottom: none;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
+                padding: 8px 18px;
+                margin-right: 2px;
+                min-width: 90px;
+            }
+            QTabBar::tab:selected {
+                background: #2166a8;
+                color: #ffffff;
+                border-color: #3986d1;
+            }
+            QTabBar::tab:hover:!selected {
+                background: #1d2c3b;
             }
         """)
     def update_connection_ui(self):
@@ -613,6 +774,20 @@ class PMC8Configurator(QWidget):
         self.protocol_label.setVisible(wifi_visible)
         self.protocol_combo.setVisible(wifi_visible)
 
+        # When switching to WiFi, pre-fill the IP field if the user hasn't
+        # already typed one. Prefer the module's last-known address (captured
+        # when they got/set it on the Network tab); otherwise fall back to the
+        # ESP boot default. RN131 (or an unknown module) is left blank so its
+        # greyed placeholder example shows, as before.
+        if wifi_visible and not self.ip_edit.text().strip():
+            last_ip = getattr(self, "_net_last_ip", "")
+            module = self.net_module_combo.currentText() \
+                if getattr(self, "net_module_combo", None) else ""
+            if last_ip:
+                self.ip_edit.setText(last_ip)
+            elif module in ("ESP32", "ESP8266"):
+                self.ip_edit.setText("192.168.47.1")
+
 
     def set_connection_indicator(self, connected):
         self.connect_button.setObjectName("ConnectedButton" if connected else "PrimaryButton")
@@ -620,10 +795,14 @@ class PMC8Configurator(QWidget):
         self.connect_button.style().unpolish(self.connect_button)
         self.connect_button.style().polish(self.connect_button)
         self.connect_button.update()
+        # Disconnect is only meaningful when a link is live — grey it out
+        # otherwise. Every connect/disconnect path routes through here.
+        self.disconnect_button.setEnabled(connected)
 
 
     def refresh_ports(self):
         try:
+            previous = self.port_combo.currentData()  # remember the user's choice
             self.port_combo.clear()
             self.port_combo.addItem("Select serial port", "")
             ports = list(serial.tools.list_ports.comports())
@@ -638,7 +817,10 @@ class PMC8Configurator(QWidget):
                     continue
                 label = f"{port.device} - {description}"
                 self.port_combo.addItem(label, port.device)
-            self.port_combo.setCurrentIndex(0)
+            # Preserve the user's selection across refreshes; only fall back to
+            # the placeholder when the previously chosen port is truly gone.
+            idx = self.port_combo.findData(previous) if previous else -1
+            self.port_combo.setCurrentIndex(idx if idx >= 0 else 0)
         except Exception as e:
             print(f"Error refreshing ports: {e}")
 
@@ -651,11 +833,21 @@ class PMC8Configurator(QWidget):
             self.connect_wifi()
 
     def disconnect_device(self):
-        conn_type = self.connection_type_combo.currentText()
-        if conn_type == "Serial":
+        # Disconnect whichever transport is actually open, regardless of the
+        # connection-type dropdown. The user may switch the dropdown to WiFi
+        # (e.g. to see an IP fetched on the Network tab) while still connected
+        # over Serial; Disconnect must still tear down the live Serial link —
+        # and vice versa. So we key off the real connection state, not the combo.
+        disconnected = False
+        if self.serial_port and self.serial_port.is_open:
             self.disconnect_serial()
-        else:
+            disconnected = True
+        if self.connection_socket:
             self.disconnect_wifi()
+            disconnected = True
+        if not disconnected:
+            self.response_box.append("Not connected.")
+            self.scroll_response_to_bottom()
 
     def connect_serial(self):
         port = (self.port_combo.currentData() or "").strip()
@@ -684,25 +876,72 @@ class PMC8Configurator(QWidget):
             self.serial_port.open()
             self.response_box.append(f"Connected to {port} (Serial, DTR/RTS held low)")
             self.set_connection_indicator(True)
+            # On Linux the kernel asserts DTR when the tty is opened (unlike
+            # Windows/macOS, which honour the pre-open "DTR off"), and DTR is
+            # tied to the Propeller reset — so every serial connect reboots the
+            # mount. It comes right back, so just wait for it before handing
+            # control back. No-op on platforms that don't reset.
+            if sys.platform.startswith("linux"):
+                self._wait_for_mount_after_reset()
         except Exception as e:
 #            self.response_box.append(f"Failed to connect (Serial): {e}")
              self.response_box.append("Please select the PMC-Eight COM port")
-             self.port_combo.setCurrentIndex(0)
+             # Keep the user's port selection on a failed connect so they can
+             # simply retry — do NOT reset the dropdown.
              self.set_connection_indicator(False)
 
         finally:
             self.scroll_response_to_bottom()
+
+    def _wait_for_mount_after_reset(self, timeout=25.0):
+        """After a Linux serial connect, the DTR pulse reboots the PMC-Eight.
+        Poll ESGi! until it answers so the reset is transparent — the connect
+        just takes a few seconds longer while the mount restarts. The probe uses
+        ESGi!, so once the mount is back we reuse that reply to fill the config
+        fields and then send ESGe! for the Fast Server fields — the connect
+        doubles as Get Configuration. Keeps the GUI responsive and gives up
+        after `timeout` seconds (the user can retry Get Configuration)."""
+        self.response_box.append("Mount reboots on serial connect (Linux) — waiting for it to come back...")
+        self.scroll_response_to_bottom()
+        end = time.time() + timeout
+        while time.time() < end:
+            try:
+                resp = self._serial_send_command("ESGi!", timeout=1.5)
+            except Exception:  # noqa: BLE001 - port may be mid-reboot
+                resp = ""
+            if resp and resp.startswith("ESGi"):
+                config = self.parse_ESGi_response(resp)
+                if config:  # a full, valid reply — mount is up
+                    self.response_box.append("Mount is back up — filling configuration.")
+                    self.update_config_display(config)
+                    self._wifi_type = config.get("WiFi Type")
+                    self.save_config_button.setEnabled(True)
+                    # Finish the fields with the Fast Server state (ESGe!);
+                    # skipped for RN131, tolerated when unanswered.
+                    self._fast_server_refresh(lambda c: self._serial_send_command(c, timeout=5.0))
+                    self.scroll_response_to_bottom()
+                    return True
+            QApplication.processEvents()
+            time.sleep(0.3)
+        self.response_box.append("Mount didn't answer within the wait — it may still be "
+                                 "starting. Try Get Configuration in a moment.")
+        self.scroll_response_to_bottom()
+        return False
 
     def disconnect_serial(self):
         try:
             if self.serial_port and self.serial_port.is_open:
                 self.serial_port.close()
                 self.response_box.append("Serial port disconnected.")
-                self.serial_port = None
-                self.set_connection_indicator(False)
         except Exception as e:
             self.response_box.append(f"Error disconnecting (Serial): {e}")
         finally:
+            # Always clear state + button, even if the port was already closed
+            # (device re-enumerated, cable pulled) — otherwise the button stays
+            # "Connected" for a dead link. Leave a live WiFi link's indicator be.
+            self.serial_port = None
+            if not self.connection_socket:
+                self.set_connection_indicator(False)
             self.scroll_response_to_bottom()
 
     def connect_wifi(self):
@@ -742,11 +981,13 @@ class PMC8Configurator(QWidget):
             if self.connection_socket:
                 self.connection_socket.close()
                 self.response_box.append("WiFi connection disconnected.")
-                self.connection_socket = None
-                self.set_connection_indicator(False)
         except Exception as e:
             self.response_box.append(f"Error disconnecting (WiFi): {e}")
         finally:
+            # Always clear state + button, even if the socket was already dead.
+            self.connection_socket = None
+            if not (self.serial_port and self.serial_port.is_open):
+                self.set_connection_indicator(False)
             self.scroll_response_to_bottom()
 
     def _serial_send_command(self, cmd, timeout=3.0):
@@ -846,7 +1087,12 @@ class PMC8Configurator(QWidget):
                 break
 
         if not chunks:
-            raise TimeoutError(f"No WiFi response for {cmd}")
+            # Old firmware silently ignores commands it doesn't implement
+            # (e.g. ESGe!/ESSe* on a mount without Fast Server) — no reply at
+            # all. Treat a missing reply as an empty response, NOT an error, so
+            # an unanswered command never looks like a dropped connection. The
+            # socket stays open; the caller just gets "" and moves on.
+            return ""
 
         response = b"".join(chunks).decode("ascii", errors="replace").strip()
         bang = response.find("!")
@@ -891,85 +1137,235 @@ class PMC8Configurator(QWidget):
                 self.param_widgets[param["name"]] = line_edit
                 self.param_layout.addRow(label_text + ":", line_edit)
 
+    def _resolve_command_to_send(self):
+        """Return (cmd_string, command_key) to transmit. `command_key` is the
+        known-command key when the list selection was used, else None for a
+        free-typed raw command. Returns (None, None) on error/empty.
+
+        The raw box wins whenever it holds text — it's the deliberate "send
+        exactly this" escape hatch, so an empty box is the only way to mean
+        "use the list". Clear it to go back to the dropdown."""
+        typed = self.raw_command_edit.text().strip()
+        if typed:
+            return typed, None
+
+        idx = self.command_combo.currentIndex()
+        if idx < 0:
+            self.response_box.append("Select a command, or type one in the box below the list.")
+            self.scroll_response_to_bottom()
+            return None, None
+        command_key = self.command_combo.itemData(idx)
+        if command_key == "ESSi!":
+            return self.build_config_command(), command_key  # cmd may be None
+        info = COMMANDS.get(command_key, {})
+        template = info.get("template", "")
+        params = {}
+        for param in info.get("params", []):
+            name = param["name"]
+            value = self.param_widgets[name].text().strip()
+            if not value:
+                self.response_box.append(f"Parameter '{name}' is required.")
+                self.scroll_response_to_bottom()
+                return None, None
+            params[name] = value
+        try:
+            return (template.format(**params) if template else command_key), command_key
+        except KeyError as e:
+            self.response_box.append(f"Missing parameter: {e}")
+            self.scroll_response_to_bottom()
+            return None, None
+
     def send_command(self):
         conn_type = self.connection_type_combo.currentText()
+        if conn_type == "Serial" and not (self.serial_port and self.serial_port.is_open):
+            self.response_box.append("Serial port not connected.")
+            self.scroll_response_to_bottom()
+            return
+        if conn_type != "Serial" and not self.connection_socket:
+            self.response_box.append("WiFi connection not established.")
+            self.scroll_response_to_bottom()
+            return
+
+        cmd, command_key = self._resolve_command_to_send()
+        if not cmd:
+            return
+
         if conn_type == "Serial":
-            if self.serial_port and self.serial_port.is_open:
-                self.serial_port.reset_input_buffer()
-                command_key = self.command_combo.currentData()
-                if command_key == "ESSi!":
-                    cmd = self.build_config_command()
-                    if not cmd:
-                        return
-                    response = self._serial_send_command(cmd)
-                    self.response_box.append(f"Sent: {cmd}\nReceived: {response}")
-                    self.scroll_response_to_bottom()
-                else:
-                    command_info = COMMANDS.get(command_key, {})
-                    template = command_info.get("template", "")
-                    params = {}
-                    for param in command_info.get("params", []):
-                        param_name = param["name"]
-                        param_value = self.param_widgets[param_name].text().strip()
-                        if not param_value:
-                            self.response_box.append(f"Parameter '{param_name}' is required.")
-                            self.scroll_response_to_bottom()
-                            return
-                        params[param_name] = param_value
-                    try:
-                        command_to_send = template.format(**params)
-                    except KeyError as e:
-                        self.response_box.append(f"Missing parameter: {e}")
-                        self.scroll_response_to_bottom()
-                        return
-                    response = self._serial_send_command(command_to_send)
-                    self.response_box.append(f"Sent: {command_to_send}\nReceived: {response}")
-                    self.scroll_response_to_bottom()
-                    if command_key == "ESGi!":
-                        config = self.parse_ESGi_response(response)
-                        self.update_config_display(config)
-                        self.save_config_button.setEnabled(True)
-            else:
-                self.response_box.append("Serial port not connected.")
+            self.serial_port.reset_input_buffer()
+            response = self._serial_send_command(cmd)
+        else:
+            try:
+                response = self._wifi_send_command(cmd)
+            except Exception as e:
+                self.response_box.append(f"Error during send/receive (WiFi): {e}")
                 self.scroll_response_to_bottom()
-        else:  # WiFi
-            if self.connection_socket:
-                command_key = self.command_combo.currentData()
-                if command_key == "ESSi!":
-                    cmd = self.build_config_command()
-                    if not cmd:
-                        return
-                else:
-                    command_info = COMMANDS.get(command_key, {})
-                    template = command_info.get("template", "")
-                    params = {}
-                    for param in command_info.get("params", []):
-                        param_name = param["name"]
-                        param_value = self.param_widgets[param_name].text().strip()
-                        if not param_value:
-                            self.response_box.append(f"Parameter '{param_name}' is required.")
-                            self.scroll_response_to_bottom()
-                            return
-                        params[param_name] = param_value
-                    try:
-                        cmd = template.format(**params)
-                    except KeyError as e:
-                        self.response_box.append(f"Missing parameter: {e}")
-                        self.scroll_response_to_bottom()
-                        return
-                try:
-                    response = self._wifi_send_command(cmd)
-                    self.response_box.append(f"Sent: {cmd}\nReceived: {response}")
-                    self.scroll_response_to_bottom()
-                except Exception as e:
-                    self.response_box.append(f"Error during send/receive (WiFi): {e}")
-                self.scroll_response_to_bottom()
-            else:
-                self.response_box.append("WiFi connection not established.")
-                self.scroll_response_to_bottom()
+                return
+        self.response_box.append(f"Sent: {cmd}\nReceived: {response}")
+        self.scroll_response_to_bottom()
+
+        # ESGi! refreshes the config display — whether it was picked from the
+        # list (command_key set) or typed as a raw command (command_key None).
+        if command_key == "ESGi!" or cmd.strip() == "ESGi!":
+            config = self.parse_ESGi_response(response)
+            self.update_config_display(config)
+            self._wifi_type = config.get("WiFi Type")
+            self.save_config_button.setEnabled(True)
+        # A manually-sent ESGe! with a valid reply updates the Fast Server
+        # display too (skip on RN131, which has no Fast Server).
+        elif cmd.strip() == "ESGe!" and not self._module_is_rn131():
+            self._fast_server_apply_reply(response)
+        # A manually-sent ESSe<p>! changes the Envision state, but its reply
+        # carries no status — so re-read ESGe! rather than leave the panel
+        # showing what was true before the command.
+        elif cmd.strip().startswith("ESSe") and not self._module_is_rn131():
+            if cmd.strip() in ("ESSe0!", "ESSe1!"):
+                # 0/1 start-stop Envision, which reboots the WiFi module. The
+                # read-back often lands mid-reboot and comes back empty; say so
+                # rather than let "Unknown" look like a failure.
+                self.response_box.append(
+                    "Envision start/stop reboots the WiFi module — if the status "
+                    "reads Unknown, wait a few seconds and run Get Configuration.")
+            self._fast_server_refresh(
+                (lambda c: self._serial_send_command(c, timeout=5.0))
+                if conn_type == "Serial" else (lambda c: self._wifi_send_command(c)))
 
     def scroll_response_to_bottom(self):
         self.response_box.moveCursor(QTextCursor.MoveOperation.End)
+
+    # ---- Fast Server (WiFi fast-server boot) ---------------------------------
+    def _fast_server_reset(self):
+        """Neutral state shown before any Get Configuration has run."""
+        self._fast_server_state = None
+        self._fast_server_available = False
+        self.fast_server_status_label.setText("— (run Get Configuration)")
+        self.fast_server_checkbox.setText("Boot into Fast Server")
+        self.fast_server_checkbox.setChecked(False)
+        self.fast_server_checkbox.setEnabled(False)
+        self.fast_server_hint.setText("")
+        self.fast_server_hint.setVisible(False)
+
+    def _fast_server_apply_state(self, able, boot, status_text, hint=""):
+        """Drive the Fast Server widgets from the two ESGe! bits:
+        `able` (bit 0 = Fast Server / Envision installed) enables the checkbox;
+        `boot` (bit 1 = boot into Fast Server) sets its checked state. The boot
+        flag is shown even when not able, so a 'boot set but not installed'
+        device state reads honestly (checkbox checked but greyed)."""
+        self._fast_server_available = bool(able)
+        self.fast_server_status_label.setText(status_text)
+        self.fast_server_checkbox.setEnabled(bool(able))
+        self.fast_server_checkbox.setChecked(bool(boot))
+        self.fast_server_checkbox.setText(
+            "Boot into Fast Server" if able else "Boot into Fast Server — unavailable")
+        self.fast_server_hint.setText(hint)
+        self.fast_server_hint.setVisible(bool(hint))
+
+    def _parse_esge(self, reply):
+        """Return the ESGe! status value as a 3-bit int (0-7), or None.
+        bit 0 = Envision capable (able); bit 1 = Envision boot flag;
+        bit 2 = Envision currently on."""
+        if not reply:
+            return None
+        r = reply.strip()
+        if r.startswith("ESGe"):
+            r = r[4:]
+        if r.endswith("!"):
+            r = r[:-1]
+        r = r.strip()
+        return int(r) if r in ("0", "1", "2", "3", "4", "5", "6", "7") else None
+
+    def _fast_server_status_text(self, able, boot, on):
+        """Human-readable Fast Server status from the three ESGe! bits."""
+        if not able:
+            return ("Not installed (boot flag set): update your WiFi firmware."
+                    if boot else "Not installed: update your WiFi firmware.")
+        if on and boot:
+            return "Enabled — running now."
+        if on and not boot:
+            return "Running now (boot off)."
+        if boot:
+            return "Enabled."
+        return "Available."
+
+    def _fast_server_refresh(self, send):
+        """Query ESGe! and update the status/checkbox. `send` is a callable
+        taking a command string and returning the device reply. Call this after
+        the ESGi parse so self._wifi_type is set.
+
+        ESGe! returns a 3-bit field: bit 0 = Envision capable, bit 1 = Envision
+        boot flag (the checkbox), bit 2 = Envision currently on. Codes 4 and 6
+        (on without capable) are impossible and treated as unknown."""
+        if self._module_is_rn131():
+            self._fast_server_apply_state(False, False, "Not available on RN-131.")
+            self.response_box.append("Fast Server: not supported on RN-131 modules.")
+            self.scroll_response_to_bottom()
+            return
+        try:
+            reply = send("ESGe!")
+        except Exception as e:
+            self._fast_server_apply_state(False, False, "Unknown (no response).")
+            self.response_box.append(f"Fast Server query failed: {e}")
+            self.scroll_response_to_bottom()
+            return
+        self.response_box.append(f"Sent: ESGe!\nReceived: {reply}")
+        self._fast_server_apply_reply(reply)
+        self.scroll_response_to_bottom()
+
+    def _fast_server_apply_reply(self, reply):
+        """Drive the Fast Server status/checkbox from an ESGe! reply — shared by
+        Get Configuration and a manually-sent ESGe! in the console, so a valid
+        value typed by hand is reflected in the display too.
+
+        ESGe! returns a 3-bit field: bit 0 = capable, bit 1 = boot flag (the
+        checkbox), bit 2 = currently on. Codes 4 and 6 (on without capable) are
+        impossible and shown as unknown. Returns True if it was a valid value."""
+        state = self._parse_esge(reply)
+        self._fast_server_state = state
+        if state is None:
+            self._fast_server_apply_state(False, False, "Unknown status.")
+            return False
+        able = bool(state & 1)
+        boot = bool(state & 2)
+        on = bool(state & 4)
+        if on and not able:
+            # Impossible per firmware contract (codes 4 and 6): can't run a mode
+            # the module isn't capable of. Don't trust it — show unknown/disabled.
+            self.response_box.append(f"Fast Server: unexpected status code {state}.")
+            self._fast_server_apply_state(False, boot, "Unknown status.", hint="")
+        else:
+            status = self._fast_server_status_text(able, boot, on)
+            hint = "" if able else "Update your WiFi firmware."
+            self._fast_server_apply_state(able, boot, status, hint=hint)
+        return True
+
+    def _fast_server_apply(self, send):
+        """Push the Boot-into-Fast-Server choice after the ESSi save:
+        ESSe3! = boot on, ESSe4! = boot off. A bare 'ESSe!' reply means the
+        firmware does not support the option. Skipped when unavailable."""
+        if not self._fast_server_available:
+            return  # RN131, not installed, or no Get Configuration yet
+        want_on = self.fast_server_checkbox.isChecked()
+        cmd = "ESSe3!" if want_on else "ESSe4!"
+        try:
+            reply = send(cmd)
+        except Exception as e:
+            self.response_box.append(f"Fast Server set failed: {e}")
+            self.scroll_response_to_bottom()
+            return
+        self.response_box.append(f"Sent: {cmd}\nReceived: {reply}")
+        if reply and reply.strip() == "ESSe!":
+            self._fast_server_apply_state(False, False,
+                "Not available: update your WiFi firmware.",
+                hint="Update your WiFi firmware.")
+            self.response_box.append("Fast Server boot option not available on this firmware.")
+        else:
+            # Boot flag (bit 1) changed; the "currently on" bit (2) is unaffected
+            # by setting the boot flag, so preserve it from the last ESGe! read.
+            on = bool((self._fast_server_state or 0) & 4)
+            self._fast_server_state = ((self._fast_server_state or 0) & ~2) | (2 if want_on else 0)
+            self.fast_server_status_label.setText(
+                self._fast_server_status_text(True, want_on, on))
+            self.response_box.append(f"Boot into Fast Server: {'ON' if want_on else 'OFF'}.")
+        self.scroll_response_to_bottom()
 
     def get_configuration(self):
         self.response_box.append("Get Config....")
@@ -988,6 +1384,7 @@ class PMC8Configurator(QWidget):
                 self.scroll_response_to_bottom()
                 config = self.parse_ESGi_response(response)
                 self.update_config_display(config)
+                self._wifi_type = config.get("WiFi Type")
                 self.save_config_button.setEnabled(True)
             
                 # Issue ESGv! for firmware version.
@@ -1012,6 +1409,7 @@ class PMC8Configurator(QWidget):
                 self.config_grid.addWidget(fw_value, row, 1, 1, 3)
                 self.response_box.append(f"Firmware Version: {fw}")
                 self.scroll_response_to_bottom()
+                self._fast_server_refresh(lambda c: self._serial_send_command(c, timeout=5.0))
             else:
                 self.response_box.append("Serial port not connected.")
                 self.scroll_response_to_bottom()
@@ -1025,23 +1423,25 @@ class PMC8Configurator(QWidget):
                     self.update_config_display(config)                    
                     self.scroll_response_to_bottom()
 
+                    self._wifi_type = config.get("WiFi Type")
                     self.save_config_button.setEnabled(True)
                     fw_response = self._wifi_send_command("ESGv!")
-                    if fw_response.startswith("ESGv"):
-                        fw = fw_response[4:]
-                    else:
-                        fw = fw_response
-                    if fw.endswith("!"):
-                        fw = fw[:-1]
-                    row = self.config_grid.rowCount()
-                    fw_label = QLabel("FIRMWARE VERSION:")
-                    fw_value = QLabel(fw)
-                    fw_value.setMinimumWidth(360)
-                    self.config_grid.addWidget(fw_label, row, 0)
-                    self.config_grid.addWidget(fw_value, row, 1, 1, 3)
-                    self.response_box.append(f"Firmware Version: {fw}")
-                    self.scroll_response_to_bottom()
-                    self.scroll_response_to_bottom()
+                    if fw_response:  # firmware version is optional — skip if the mount didn't answer
+                        if fw_response.startswith("ESGv"):
+                            fw = fw_response[4:]
+                        else:
+                            fw = fw_response
+                        if fw.endswith("!"):
+                            fw = fw[:-1]
+                        row = self.config_grid.rowCount()
+                        fw_label = QLabel("FIRMWARE VERSION:")
+                        fw_value = QLabel(fw)
+                        fw_value.setMinimumWidth(360)
+                        self.config_grid.addWidget(fw_label, row, 0)
+                        self.config_grid.addWidget(fw_value, row, 1, 1, 3)
+                        self.response_box.append(f"Firmware Version: {fw}")
+                        self.scroll_response_to_bottom()
+                    self._fast_server_refresh(lambda c: self._wifi_send_command(c))
                 except Exception as e:
                     self.response_box.append(f"Error in WiFi get configuration: {e}")
                     self.scroll_response_to_bottom()
@@ -1059,6 +1459,7 @@ class PMC8Configurator(QWidget):
                 response = self._serial_send_command(cmd)
                 self.response_box.append(f"Sent: {cmd}\nReceived: {response}")
                 self.scroll_response_to_bottom()
+                self._fast_server_apply(lambda c: self._serial_send_command(c, timeout=5.0))
             else:
                 self.response_box.append("Serial port not connected.")
                 self.scroll_response_to_bottom()
@@ -1071,6 +1472,7 @@ class PMC8Configurator(QWidget):
                     response = self._wifi_send_command(cmd)
                     self.response_box.append(f"Sent: {cmd}\nReceived: {response}")
                     self.scroll_response_to_bottom()
+                    self._fast_server_apply(lambda c: self._wifi_send_command(c))
                 except Exception as e:
                     self.response_box.append(f"Error in WiFi save configuration: {e}")
                     self.scroll_response_to_bottom()
@@ -1251,7 +1653,22 @@ class PMC8Configurator(QWidget):
             self.config_widgets[key] = widget
         self.config_populated = True
         self.update_command_dropdown()
- 
+        # Reflect the module type detected here in the Network tab's WiFi-module
+        # dropdown, so the user doesn't have to select it by hand.
+        self._sync_net_module_from_config(config.get("WiFi Type"))
+
+    def _sync_net_module_from_config(self, wifi_type):
+        """Pre-set the Network tab's WiFi-module dropdown from the type detected
+        by Get Configuration (ESGi! byte 30). The config value '8266' maps to the
+        dropdown's 'ESP8266' label; RN131/ESP32 match directly. Unknown/blank
+        leaves the current selection alone."""
+        target = {"RN131": "RN131", "8266": "ESP8266", "ESP32": "ESP32"}.get(wifi_type)
+        combo = getattr(self, "net_module_combo", None)
+        if target and combo is not None:
+            idx = combo.findText(target)
+            if idx >= 0 and combo.currentIndex() != idx:
+                combo.setCurrentIndex(idx)
+
     def build_config_command(self):
         mount_mapping = {
             "Exos2": "08",
@@ -1318,6 +1735,150 @@ class PMC8Configurator(QWidget):
             self.scroll_response_to_bottom()
             return None
 
+    def _raw_serial_query(self, sp, cmd, timeout=3.0):
+        """Send `cmd` on an already-open pyserial port and return the first
+        ES...! reply that isn't the command echo (empty string if none)."""
+        orig = sp.timeout
+        try:
+            sp.timeout = 0.1
+            try:
+                sp.reset_input_buffer()
+            except Exception:
+                pass
+            sp.write((cmd + "\r\n").encode("ascii"))
+            sp.flush()
+            echo = cmd.strip()
+            deadline = time.time() + timeout
+            frame = bytearray()
+            while time.time() < deadline:
+                b = sp.read(1)
+                if not b:
+                    continue
+                frame.extend(b)
+                if b not in (b"!", b"\n"):
+                    continue
+                text = bytes(frame).decode("ascii", errors="replace").strip().strip("\r\n")
+                i = text.find("ES")
+                if i > 0:
+                    text = text[i:]
+                if text and text != echo:
+                    return text
+                frame.clear()
+            return ""
+        finally:
+            sp.timeout = orig
+
+    def _raw_serial_command(self, sp, cmd):
+        """Fire a command on an open pyserial port without waiting for a reply."""
+        try:
+            sp.reset_input_buffer()
+        except Exception:
+            pass
+        sp.write((cmd + "\r\n").encode("ascii"))
+        sp.flush()
+
+    def _wait_with_countdown(self, seconds, label):
+        """Block for `seconds` while keeping the GUI responsive, showing the
+        countdown on the upload status label next to the button."""
+        self.response_box.append(f"{label}…")
+        self.scroll_response_to_bottom()
+        end = time.time() + seconds
+        last = None
+        while True:
+            remaining = end - time.time()
+            if remaining <= 0:
+                break
+            r = int(remaining) + 1
+            if r != last:
+                self.upload_status_label.setText(f"{label} — {r}s")
+                last = r
+            QApplication.processEvents()
+            time.sleep(0.05)
+        self.upload_status_label.setText("")
+        self.response_box.append(f"{label} done.")
+        self.scroll_response_to_bottom()
+
+    def _ensure_envision_off_for_upload(self, port):
+        """Before a Propeller download, stop Envision (Fast Server) mode if it
+        is running. While active it holds the serial line and corrupts the
+        upload (checksum NAK). Query ESGe!; if the 'currently on' bit is set
+        (reply value >= 4) send ESSe0! and wait ~5 s for the WiFi module to
+        reboot. Uses the live serial connection if present, else a temp one.
+        Returns True if it stopped Envision (module rebooted), else False."""
+        if self._module_is_rn131():
+            return False  # RN131 has no Fast Server/Envision — nothing to stop
+        owns_temp = False
+        if self.serial_port is not None and self.serial_port.is_open:
+            sp = self.serial_port
+        else:
+            try:
+                sp = serial.Serial()
+                sp.port = port
+                sp.baudrate = 115200
+                sp.timeout = 1
+                sp.write_timeout = 1
+                sp.dtr = False
+                sp.rts = False
+                sp.open()
+                owns_temp = True
+            except Exception as e:
+                self.response_box.append(f"Envision pre-check skipped (could not open {port}: {e})")
+                self.scroll_response_to_bottom()
+                return False
+
+        need_reset = False
+        try:
+            reply = self._raw_serial_query(sp, "ESGe!", timeout=3.0)
+            self.response_box.append(
+                f"Pre-program check — Sent: ESGe!  Received: {reply or '(no reply)'}")
+            state = self._parse_esge(reply)
+            if state is not None and state >= 4:
+                need_reset = True
+                self.upload_status_label.setText("WiFi module rebooting…")
+                QApplication.processEvents()
+                self.response_box.append(
+                    "Envision (Fast Server) mode is ACTIVE — stopping it before "
+                    "programming (ESSe0!). The WiFi module will now reboot; please wait.")
+                self.scroll_response_to_bottom()
+                self._raw_serial_command(sp, "ESSe0!")
+            else:
+                self.response_box.append("Envision mode not active — OK to program.")
+            self.scroll_response_to_bottom()
+        except Exception as e:
+            self.response_box.append(f"Envision pre-check error: {e}")
+            self.scroll_response_to_bottom()
+        finally:
+            # Release the serial line so the module can reboot cleanly and the
+            # loader can open the port.
+            if owns_temp:
+                try:
+                    sp.close()
+                except Exception:
+                    pass
+            elif need_reset:
+                self.disconnect_serial()
+
+        if need_reset:
+            self._wait_with_countdown(5, "WiFi module rebooting")
+        return need_reset
+
+    def _reconnect_to_port(self, port):
+        """Reconnect serial to a specific port — never to whatever the combo
+        happens to show. Refreshes the list first so a re-enumerated device is
+        picked up; if that exact port is gone, ask the user to reselect."""
+        self.refresh_ports()
+        idx = self.port_combo.findData(port)
+        if idx >= 0:
+            self.port_combo.setCurrentIndex(idx)
+            self.response_box.append(f"Reconnecting to {port} after upload...")
+            self.scroll_response_to_bottom()
+            self.connect_serial()
+        else:
+            self.response_box.append(
+                f"Upload done. {port} is no longer listed — select the PMC-Eight "
+                f"COM port to reconnect.")
+            self.scroll_response_to_bottom()
+
     def open_upload_dialog(self):
         selected_port = (self.port_combo.currentData() or "").strip()
         if not selected_port:
@@ -1325,24 +1886,46 @@ class PMC8Configurator(QWidget):
             self.scroll_response_to_bottom()
             return
 
-        reconnect = False
+        was_connected = self.serial_port is not None and self.serial_port.is_open
 
-        # If currently connected, disconnect
+        # Stop Envision (Fast Server) mode if it is running — it holds the serial
+        # line and corrupts the download. May reboot the WiFi module.
+        did_reset = self._ensure_envision_off_for_upload(selected_port)
+
+        # A module reboot can re-enumerate the COM port; make sure the port we
+        # are about to program is the one actually present now.
+        if did_reset:
+            self.refresh_ports()
+            if self.port_combo.findData(selected_port) < 0:
+                self.upload_status_label.setText("")
+                self.response_box.append(
+                    f"Envision stopped, but {selected_port} is no longer listed "
+                    f"(the module re-enumerated). Select the PMC-Eight COM port and "
+                    f"press Upload again — Envision is already off now.")
+                self.scroll_response_to_bottom()
+                return
+            self.port_combo.setCurrentIndex(self.port_combo.findData(selected_port))
+
+        reconnect = False
+        # If still connected, disconnect for the upload.
         if self.serial_port is not None and self.serial_port.is_open:
             self.response_box.append("Disconnecting current serial connection for upload...")
             self.scroll_response_to_bottom()
             reconnect = True
             self.disconnect_serial()
-    
+        elif was_connected:
+            # The Envision reset already dropped the live link; still reconnect
+            # after the upload finishes.
+            reconnect = True
+
         # Open the uploader dialog, passing the selected port
         dialog = UploadDialog(self, serial_port=selected_port)
         dialog.exec()
 
-        # After the uploader finishes, reconnect if needed
+        # After the uploader finishes, reconnect to the SAME port if needed.
+        self.upload_status_label.setText("")
         if reconnect:
-            self.response_box.append("Reconnecting to serial port after upload...")
-            self.scroll_response_to_bottom()
-            self.connect_serial()
+            self._reconnect_to_port(selected_port)
 
 
 
@@ -1356,8 +1939,23 @@ class PMC8Configurator(QWidget):
 if __name__ == '__main__':
     if not preflight_assets():
         sys.exit(1)
+
+    # Raspberry Pi OS (Bookworm) defaults to Wayland, but python3-pyqt6 doesn't
+    # ship the Qt Wayland platform plugin — Qt prints "Could not find the Qt
+    # platform plugin 'wayland'" and falls back on its own. Pin the well-tested
+    # X11/XWayland plugin (xcb) here, before Qt initialises, so it applies no
+    # matter how the app was launched (launcher, desktop icon, or python3
+    # directly). Linux only; setdefault honours an explicit QT_QPA_PLATFORM.
+    if sys.platform.startswith("linux"):
+        os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
+
     try:
         app = QApplication(sys.argv)
+        # Pin the Fusion style so widgets render identically across every Windows
+        # version / Qt build. The native "windowsvista" style paints QTabBar (and
+        # other sub-controls) inconsistently under a global QWidget QSS rule, which
+        # is what made the Network tab render blank for some users in v0.2.0.
+        app.setStyle("Fusion")
         window = PMC8Configurator()
         window.show()
         sys.exit(app.exec())
