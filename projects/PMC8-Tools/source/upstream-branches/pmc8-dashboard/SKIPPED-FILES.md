@@ -1,6 +1,7 @@
 # Skipped Files
 
-The following files from Wes McDonald's upstream `pmc8-dashboard` branch were not copied into git because they are binary release assets, firmware payloads, images, PDFs, packaged dependencies, or executable artifacts. Use the release links in the project index for customer downloads.
+Snapshot source: wesmcd6/pmc8-tools branch $b at $full.
 
-- `pmc8-dashboard/.gitignore`
-- `pmc8-dashboard/p1load_package (1)/p1load`
+The following files were omitted from this git snapshot because customer-facing binaries, firmware payloads, images, PDFs, installers, and packaged dependencies are distributed as release assets instead of source files.
+
+- pmc8-dashboard\p1load_package (1)\p1load (53432 bytes)

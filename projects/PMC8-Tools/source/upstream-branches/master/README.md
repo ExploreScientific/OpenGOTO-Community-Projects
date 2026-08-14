@@ -10,7 +10,7 @@ Downloads for **Explore Scientific&trade; PMC-Eight&trade;** telescope mount use
 
 ## ExploreStars Envision&trade; — current
 
-📦 **[Get the latest release →](../../releases/latest)**
+📦 **[Get the v2.5.0.3 release →](../../releases/tag/v2.5.0.3)**
 
 The Releases page carries pre-built binaries for every platform. Pick the asset that matches your device:
 
@@ -27,15 +27,16 @@ iOS and macOS app-store builds are planned.
 
 ## PMC8 Dashboard
 
-**Downloads:** use the `pmc8-dashboard-v0.1.0` release assets when available.
+**Downloads:** get the latest assets from the [`pmc8-dashboard-v0.2.6`](../../releases/tag/pmc8-dashboard-v0.2.6) release.
 
-PMC8 Dashboard is a Python/PyQt6 desktop utility for PMC-Eight configuration, command testing, response logging, and firmware upload workflow support.
+PMC8 Dashboard is a Python/PyQt6 desktop utility for PMC-Eight configuration, WiFi/home-network setup, command testing, response logging, and firmware upload workflow support.
 
 | Item | Link | Notes |
 |---|---|---|
 | Source and manual | [`pmc8-dashboard`](../../tree/pmc8-dashboard/pmc8-dashboard) | Public source, docs, and third-party notices |
-| Windows ZIP | [`PMC8_Dashboard_Windows.zip`](../../releases/tag/pmc8-dashboard-v0.1.0) | Extract and run `run_dashboard_windows.bat` |
-| macOS ZIP | [`PMC8_Dashboard_macOS.zip`](../../releases/tag/pmc8-dashboard-v0.1.0) | Extract, `chmod +x run_dashboard_macos.command`, then `./run_dashboard_macos.command` if needed |
+| Windows ZIP | [`PMC8_Dashboard_Windows.zip`](../../releases/download/pmc8-dashboard-v0.2.6/PMC8_Dashboard_Windows.zip) | Extract and run `run_dashboard_windows.bat` |
+| macOS ZIP | [`PMC8_Dashboard_macOS.zip`](../../releases/download/pmc8-dashboard-v0.2.6/PMC8_Dashboard_macOS.zip) | Extract, double-click `setup_macos.command` (first run), then `run_PMC8-Dashboard.command` |
+| Linux / Raspberry Pi (64-bit) ZIP | [`PMC8_Dashboard_Linux.zip`](../../releases/download/pmc8-dashboard-v0.2.6/PMC8_Dashboard_Linux.zip) | Extract, run `setup_linux.sh` (first run), then `run_dashboard_linux.sh` |
 
 ## Network Configuration
 
@@ -65,9 +66,9 @@ Each zip is a self-contained single-file executable plus the User Manual — no 
 | Tool | Branch | Description |
 |------|--------|-------------|
 | PMC-Eight UFCT | [`pmc8-ufct`](../../tree/pmc8-ufct) | **Universal Firmware Configuration Tool** (Windows) — read/write config, send raw commands, serial firmware flash, RN-131 restore |
-| PMC-Eight Firmware | [`pmc8-firmware`](../../tree/pmc8-firmware) | Latest Propeller firmware (flash via UFCT) |
-| ESP32 OTA Update | [`esp32-ota`](../../tree/esp32-ota) | Wi-Fi firmware update script + binary |
-| ESP32 Serial Flash | [`esp32-serial-flash`](../../tree/esp32-serial-flash) | Fallback when OTA isn't possible — self-contained zip with ESPLoader + esptool |
+| PMC-Eight Firmware | [`pmc8-firmware`](../../tree/pmc8-firmware) | Latest Propeller firmware, **20A02.2.0.1** (flash via UFCT or the PMC8 Dashboard) |
+| ESP32 OTA Update | [**v2.3 release**](../../releases/tag/esp32-ota-v2.3) · [docs](../../tree/esp32-ota) | Update the **ESP32** Wi-Fi firmware (**ES4.2.30**) over the air — no opening the mount. Windows, macOS and Linux/Raspberry Pi. Finds the serial port for you |
+| ESP32 Serial Flash | [**v1.0 release**](../../releases/tag/esp32-serial-flash-v1.0) · [docs](../../tree/esp32-serial-flash) | Rescue path when OTA isn't possible — needs opening the mount and fitting a jumper. Windows, macOS and Linux/Raspberry Pi |
 
 ## Alternate distribution branches
 
@@ -90,7 +91,10 @@ Cross-platform telescope mount control — runs on Android, Windows, and as a se
 - Multi-language UI (English, 简体中文, Français, Italiano, Español, Deutsch, Português, 日本語, Nederlands, Polski, Українська)
 - Night vision mode for dark adaptation
 - GPS location, firmware config reader/writer
-- Works alongside Alpaca/ASCOM and planetarium software
+- **Envision Mode (Enhanced WiFi)** — optional faster, smoother multi-client operation where the WiFi-module firmware supports it
+- **Share one mount** with the app on several phones/tablets AND an ASCOM Alpaca / INDI driver at once — Cartes du Ciel, SkySafari, Stellarium, etc. connect through the driver
+- **Self-hosted server runs on macOS, Raspberry Pi, and Windows** from one download (web server + USB-serial support bundled)
+- **QR-code phone setup** — a `/start` page with scannable codes for the certificate, the app, and mount-sharing, plus a "Start Envision" full-screen Home-Screen icon
 - Built-in user manual
 
 ## Trademarks &amp; copyright

@@ -1,0 +1,7 @@
+# SHA256 Checksums
+
+```text
+d21ae0725eff428d51b48b926034d8f7fa42f4c45d56e19f005d52ad3020121e  PMC8_Dashboard_Windows.zip
+f1f88627be5dc982d5c67e55fe347d377418eefaab22844bd09dae064fe2b562  PMC8_Dashboard_macOS.zip
+afd9905fd473023313346ccc7939b31d7e5d640d268b26a84df3d4c92a125265  PMC8_Dashboard_Linux.zip
+```

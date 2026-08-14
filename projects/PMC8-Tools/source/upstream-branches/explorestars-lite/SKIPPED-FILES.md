@@ -1,6 +1,8 @@
 # Skipped Files
 
-The following files from Wes McDonald's upstream `explorestars-lite` branch were not copied into git because they are binary release assets, firmware payloads, images, PDFs, packaged dependencies, or executable artifacts. Use the release links in the project index for customer downloads.
+Snapshot source: wesmcd6/pmc8-tools branch $b at $full.
 
-- `com.explorestarlite.app-Signed.apk`
-- `ExplorestarsLite-Handout.pdf`
+The following files were omitted from this git snapshot because customer-facing binaries, firmware payloads, images, PDFs, installers, and packaged dependencies are distributed as release assets instead of source files.
+
+- com.explorestarlite.app-Signed.apk (38613782 bytes)
+- ExplorestarsLite-Handout.pdf (73344 bytes)
