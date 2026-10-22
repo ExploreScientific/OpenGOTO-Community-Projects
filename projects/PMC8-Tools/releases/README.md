@@ -10,8 +10,8 @@ This folder documents PMC8 Tools releases that are relevant to OpenGOTO communit
 - PMC8 Dashboard v0.2.6: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-dashboard-v0.2.6
 - PMC-Eight ESP32 firmware current: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-esp32-current
 - PMC-Eight ESP32 firmware ES4.2.3 archive: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-esp32-es4.2.3
-- PMC-Eight ESP32 OTA v2.3 / ES4.2.30: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/esp32-ota-v2.3
-- PMC-Eight ESP32 Serial Flash v1.0 / ES4.2.3: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/esp32-serial-flash-v1.0
+- PMC-Eight ESP32 OTA v2.5 / ES4.2.32: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/esp32-ota-v2.5
+- PMC-Eight ESP32 Serial Flash v1.3 / ES4.2.3: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/esp32-serial-flash-v1.3
 
 ## Upstream Wes McDonald Releases
 
@@ -19,8 +19,8 @@ This folder documents PMC8 Tools releases that are relevant to OpenGOTO communit
 
 ## Branch Package Mirrors
 
-- ESP32 OTA Update ES4.2.30: `esp32-ota` branch, package `pmc8-esp32-ota-v2.3-ES4.2.30.zip`
-- ESP32 Serial Flash ES4.2.3: `esp32-serial-flash` branch, package `pmc8-esp32-serial-flash-v1.0-ES4.2.3.zip`
+- ESP32 OTA Update ES4.2.32: `esp32-ota` branch, package `pmc8-esp32-ota-v2.5-ES4.2.32.zip`
+- ESP32 Serial Flash ES4.2.3: `esp32-serial-flash` branch, package `pmc8-esp32-serial-flash-v1.3-ES4.2.3.zip`
 
 ## Stable Website Download Links
 
@@ -28,3 +28,5 @@ Use these fixed URLs for Explore Scientific website links. The filenames stay st
 
 - OTA update: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/download/pmc8-esp32-current/pmc8-esp32-ota.zip
 - Serial-flash fallback: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/download/pmc8-esp32-current/pmc8-esp32-serial-flash.zip
+
+ESP32 refresh: 2026-10-22. Serial flash v1.3 installs recovery firmware ES4.2.3 by design; follow it with OTA v2.5 to reach ES4.2.32. The versioned ZIPs and stable current aliases are byte-for-byte identical to the upstream release assets. Older versioned releases remain available as archives.

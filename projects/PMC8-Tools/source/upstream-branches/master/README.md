@@ -1,3 +1,5 @@
+> Historical upstream landing-page snapshot from 2026-08-14. For the current mirrored ESP32 packages (OTA v2.5 / ES4.2.32 and serial flash v1.3 / ES4.2.3), use the [OpenGOTO release index](../../../releases/README.md).
+
 # PMC-Eight&trade; Tools
 
 Downloads for **Explore Scientific&trade; PMC-Eight&trade;** telescope mount users — the **ExploreStars Envision&trade;** mount-control app, ESP32 Wi-Fi firmware tools, and the latest Propeller firmware.

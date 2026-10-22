@@ -24,3 +24,5 @@ The upstream public repository remains:
 https://github.com/wesmcd6/pmc8-tools
 
 Redistribution and modification terms vary by tool. Preserve the README, LICENSE, and notice files associated with each branch.
+
+ESP32 documentation refresh (2026-10-22): the OTA and serial-flash folders now contain guides copied verbatim from OTA v2.5 and serial flash v1.3 release ZIPs, with mirror download guidance. Other branch snapshots retain their original import dates.

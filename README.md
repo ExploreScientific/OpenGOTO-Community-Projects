@@ -63,7 +63,7 @@ Verification hashes are listed in `projects/PMC-Eight-ALPACA-Server/checksums/SH
 
 ## Firmware Update Notice
 
-The current PMC-Eight ESP32 Wi-Fi firmware update packages mirrored here are ES4.2.3. Use the OTA package first when the ESP32 already supports OTA updates, and use the serial-flash package only as the fallback path for missing, corrupted, or too-old ESP32 firmware.
+The current PMC-Eight ESP32 packages are OTA v2.5 / ES4.2.32 and serial flash v1.3 / ES4.2.3 (updated 2026-10-22). Use OTA first when supported. Serial flash is the rescue path for missing, corrupted, or too-old ESP32 firmware; it deliberately installs ES4.2.3. After recovery, run OTA v2.5 to reach ES4.2.32. Follow the guide inside each package.
 
 - OTA update: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/download/pmc8-esp32-current/pmc8-esp32-ota.zip
 - Serial-flash fallback: https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/download/pmc8-esp32-current/pmc8-esp32-serial-flash.zip
