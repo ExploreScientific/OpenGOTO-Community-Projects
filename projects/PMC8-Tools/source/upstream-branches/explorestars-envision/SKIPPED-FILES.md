@@ -1,7 +1,3 @@
-# Skipped Files
+# Snapshot completeness
 
-Snapshot source: wesmcd6/pmc8-tools branch $b at $full.
-
-The following files were omitted from this git snapshot because customer-facing binaries, firmware payloads, images, PDFs, installers, and packaged dependencies are distributed as release assets instead of source files.
-
-- images\ui\thumbpad.jpg (27756 bytes)
+The current public Envision documentation and its small manual resources are included in this compatibility directory. No files from the November 20 documentation snapshot were omitted. Full app packages remain release downloads.

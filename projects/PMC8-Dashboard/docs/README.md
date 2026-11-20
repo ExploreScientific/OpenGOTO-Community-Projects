@@ -1,6 +1,3 @@
 # PMC8 Dashboard Documentation
 
-This directory contains the current PMC8 Dashboard user manual imported from the shipped Dashboard release package.
-
-- `PMC8_Dashboard_User_Manual.html`
-- `PMC8_Dashboard_User_Manual.txt`
+Updated for v0.2.7 on 2026-11-20. Follow the platform README and manual in the [release ZIP](https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-dashboard-v0.2.7).

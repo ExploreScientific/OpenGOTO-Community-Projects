@@ -1,0 +1,247 @@
+:root {
+  --bg: #10141a;
+  --panel: #171d26;
+  --panel-2: #1e2632;
+  --line: #2b3543;
+  --ink: #e6edf5;
+  --muted: #93a2b5;
+  --accent: #4da3ff;
+  --ok: #46d17f;
+  --warn: #e8b13d;
+  --danger: #ff6b5e;
+  --mono: ui-monospace, SFMono-Regular, "Cascadia Mono", Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+/* The UA rule is [hidden] { display: none }, which ANY class setting `display`
+   outbids — .status uses flex, so el.hidden did nothing and its spinner kept
+   running forever. Make hidden win. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  padding: 2rem 1.25rem 4rem;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+main { max-width: 940px; margin: 0 auto; }
+
+h1 { font-size: 1.6rem; margin: 0 0 .25rem; letter-spacing: -.01em; }
+h2 { font-size: 1.05rem; margin: 2rem 0 .6rem; }
+.sub { color: var(--muted); margin: 0 0 1.75rem; }
+a { color: var(--accent); }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.cards { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
+@media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }
+
+.card h3 { margin: 0 0 .4rem; font-size: 1.05rem; }
+.card p { margin: 0 0 .9rem; color: var(--muted); }
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: .55rem 1rem;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--ink);
+  cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #08121d; }
+button.danger { background: #3a1c1a; border-color: var(--danger); color: #ffb3ac; }
+
+.row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+label { color: var(--muted); font-size: .88rem; }
+input[type=number], select {
+  font: inherit; background: var(--panel-2); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px; padding: .35rem .5rem;
+}
+input[type=number] { width: 6rem; }
+
+.badge {
+  display: inline-block; font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em;
+  padding: .18rem .5rem; border-radius: 4px; margin-bottom: .6rem;
+}
+.badge.safe { background: #12331f; color: var(--ok); }
+.badge.reversible { background: #33290f; color: var(--warn); }
+.badge.permanent { background: #38191a; color: var(--danger); }
+
+.notice {
+  border-left: 3px solid var(--warn);
+  background: #221b0c;
+  padding: .75rem 1rem;
+  border-radius: 0 7px 7px 0;
+  margin: 1rem 0;
+}
+.notice.bad { border-color: var(--danger); background: #2a1514; }
+.notice.good { border-color: var(--ok); background: #102a1c; }
+
+#log {
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.5;
+  background: #0b0e13; border: 1px solid var(--line); border-radius: 8px;
+  padding: .8rem; height: 300px; overflow: auto; white-space: pre-wrap;
+  word-break: break-word; margin-top: .75rem;
+}
+/* Red means something went WRONG. Advisory information — "this writes to
+   EEPROM", "this reboots the controller" — is amber, not red. Using red for
+   both trains people to ignore it. */
+.t-err { color: var(--danger); }
+.t-warn { color: var(--warn); }
+.t-ok { color: var(--ok); }
+.t-dim { color: var(--muted); }
+
+table { border-collapse: collapse; width: 100%; margin-top: .5rem; }
+td, th { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; width: 34%; }
+td.val { font-family: var(--mono); }
+
+progress { width: 100%; height: 8px; margin-top: .6rem; }
+details summary { cursor: pointer; color: var(--muted); }
+
+/* Each tool is a destination, not a footnote — make the headings findable. */
+.tool > summary {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: .01em;
+  list-style: none;
+}
+.tool > summary::-webkit-details-marker { display: none; }
+.tool > summary::before {
+  content: '\25B8';            /* ▸ — rotates to ▾ when the section is open */
+  display: inline-block;
+  width: 1.1em;
+  color: var(--muted);
+  transition: transform .12s ease;
+}
+.tool[open] > summary::before { transform: rotate(90deg); }
+.tool > summary:hover { text-decoration: underline; }
+.tool[open] > summary { margin-bottom: .3rem; }
+
+.inp {
+  font: inherit;
+  background: var(--panel-2);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: .35rem .5rem;
+}
+.mono { font-family: var(--mono); font-size: 13px; }
+
+/* Password field with a reveal button tucked inside its right edge. */
+.pw-wrap { position: relative; display: inline-block; }
+.pw-wrap .inp { width: 12rem; padding-right: 2.1rem; }
+.pw-peek {
+  position: absolute;
+  right: .25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: none;
+  padding: .1rem .25rem;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: .55;
+}
+.pw-peek:hover, .pw-peek.on { opacity: 1; border-color: transparent; }
+.pw-peek:focus-visible { outline: 2px solid var(--accent); border-radius: 4px; }
+
+/* A single overwriting line beside the button that started the work. The log
+   is at the bottom of the page and usually off screen, so without this a
+   20-second connect looked like nothing was happening. */
+.status {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  margin-top: .6rem;
+  min-height: 1.3rem;
+  font-size: .9rem;
+  color: var(--muted);
+}
+.status.busy::before {
+  content: '';
+  flex: none;
+  width: .85em;
+  height: .85em;
+  border: 2px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Respect a reduced-motion preference: pulse instead of spin. */
+@media (prefers-reduced-motion: reduce) {
+  .status.busy::before { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .25; } }
+}
+
+/* Outcome indicators — the answer should be readable without the log. */
+.verdict {
+  font-weight: 800;
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: .2rem .45rem;
+  border-radius: 5px;
+}
+.verdict.good { color: var(--ok); background: #12331f; }
+.verdict.bad { color: var(--danger); background: #38191a; }
+
+.verdict-detail {
+  margin-top: .6rem;
+  padding: .6rem .8rem;
+  border-radius: 7px;
+  border-left: 3px solid var(--line);
+  background: var(--panel-2);
+}
+.verdict-detail.good { border-color: var(--ok); background: #102a1c; }
+.verdict-detail.bad { border-color: var(--danger); background: #2a1514; }
+
+button.ok-btn {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: #062313;
+  font-weight: 800;
+  letter-spacing: .03em;
+}
+button.ok-btn:disabled { opacity: 1; cursor: default; }
+
+/* The log is a separate surface, not another card in the stack. */
+#logbox {
+  margin-top: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0b0e13;
+}
+.logbox-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .5rem .75rem;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.logbox-head button { padding: .25rem .6rem; font-size: .8rem; }
+#logbox #log { border: 0; border-radius: 0; margin: 0; height: 260px; }

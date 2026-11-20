@@ -18,7 +18,7 @@ Status: Upstream tool collection identified; current release index documented; s
 | --- | --- | --- | --- |
 | PMC8 Home Network Config | `home-network-config` | https://github.com/wesmcd6/pmc8-tools/releases/tag/home-network-config-v1.0 | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/home-network-config-v1.0 |
 | Spiral Search Bridge | `spiral-search` | https://github.com/wesmcd6/pmc8-tools/releases/tag/spiralsearch-v2.0 | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/spiralsearch-v2.0 |
-| PMC8 Dashboard | `pmc8-dashboard` | https://github.com/wesmcd6/pmc8-tools/releases/tag/pmc8-dashboard-v0.2.6 | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-dashboard-v0.2.6 |
+| PMC8 Dashboard | `pmc8-dashboard` | https://github.com/wesmcd6/pmc8-tools/releases/tag/pmc8-dashboard-v0.2.7 | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-dashboard-v0.2.7 |
 | PMC-Eight UFCT | `pmc8-ufct` | https://github.com/wesmcd6/pmc8-tools/releases/tag/pmc8-ufct-v2.1 | Official Explore Scientific UFCT release is maintained separately: https://github.com/ExploreScientific/PMC-Eight-UFCT/releases/latest |
 | ESP32 OTA Update ES4.2.32 | `esp32-ota` | https://github.com/wesmcd6/pmc8-tools/releases/tag/esp32-ota-v2.5 | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/esp32-ota-v2.5 |
 | ESP32 Serial Flash ES4.2.3 | `esp32-serial-flash` | https://github.com/wesmcd6/pmc8-tools/releases/tag/esp32-serial-flash-v1.3 | https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/esp32-serial-flash-v1.3 |
@@ -39,3 +39,10 @@ Contributor: Wes McDonald
 Hosted by Explore Scientific as an OpenGOTO community index for PMC-Eight users.
 
 ESP32 refresh: 2026-10-22. Serial flash v1.3 installs recovery firmware ES4.2.3 by design; follow it with OTA v2.5 to reach ES4.2.32. The versioned ZIPs and stable current aliases are byte-for-byte identical to the upstream release assets. Older versioned releases remain available as archives.
+
+## Public mirror refresh — 2026-11-20
+
+- [Dashboard v0.2.7](https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-dashboard-v0.2.7): Windows, macOS and Linux downloads, source and guides.
+- [ESP8266 serial recovery v1.1](https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/esp8266-serial-flash-v1.1): ESP8266 hardware only; distinct from ESP32 recovery.
+- [Browser tools source snapshot](https://github.com/ExploreScientific/OpenGOTO-Community-Projects/tree/main/projects/PMC8-Browser-Tools) and [download](https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-browser-tools-20261120).
+- Envision documentation refreshed for [2.6.1.0](https://github.com/ExploreScientific/Envision-the-Heavens-Releases/releases/tag/v2.6.1.0); app downloads remain in the dedicated Envision mirror.

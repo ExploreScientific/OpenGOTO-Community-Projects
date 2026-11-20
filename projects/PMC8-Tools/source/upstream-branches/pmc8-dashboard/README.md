@@ -10,7 +10,7 @@ Downloads for **Explore Scientific&trade; PMC-Eight&trade;** telescope mount use
 
 ## ExploreStars Envision&trade; — current
 
-📦 **[Get the latest release →](../../releases/latest)**
+📦 **[Get the latest release →](https://github.com/wesmcd6/pmc8-tools/releases/latest)**
 
 The Releases page carries pre-built binaries for every platform. Pick the asset that matches your device:
 
@@ -20,7 +20,7 @@ The Releases page carries pre-built binaries for every platform. Pick the asset 
 | `ExploreStars-Envision-vX.Y.Z.W-windows.zip` | Windows | Extract, run `ExplorestarsLite.Maui.exe` |
 | `ExploreStars-Envision-vX.Y.Z.W-pwa-server.zip` | Self-hosted PWA | Run on a Windows/Mac/Linux PC; phones connect via local Wi-Fi |
 
-For the user manual and attribution doc, see the [`explorestars-envision`](../../tree/explorestars-envision) branch.
+For the user manual and attribution doc, see the [`envision`](https://github.com/wesmcd6/pmc8-tools/tree/envision) branch.
 
 iOS and macOS app-store builds are planned.
 
@@ -28,17 +28,17 @@ iOS and macOS app-store builds are planned.
 
 | Tool | Branch | Description |
 |------|--------|-------------|
-| PMC-Eight Firmware | [`pmc8-firmware`](../../tree/pmc8-firmware) | Latest Propeller firmware (flash via UFCT) |
-| ESP32 OTA Update | [`esp32-ota`](../../tree/esp32-ota) | Wi-Fi firmware update script + binary |
-| ESP32 Serial Flash | [`esp32-serial-flash`](../../tree/esp32-serial-flash) | Fallback when OTA isn't possible — self-contained zip with ESPLoader + esptool |
+| PMC-Eight Firmware | [`pmc8-firmware`](https://github.com/wesmcd6/pmc8-tools/tree/pmc8-firmware) | Latest Propeller firmware (flash via UFCT) |
+| ESP32 OTA Update | [`esp32-ota`](https://github.com/wesmcd6/pmc8-tools/tree/esp32-ota) | Wi-Fi firmware update script + binary |
+| ESP32 Serial Flash | [`esp32-serial-flash`](https://github.com/wesmcd6/pmc8-tools/tree/esp32-serial-flash) | Fallback when OTA isn't possible — self-contained zip with ESPLoader + esptool |
 
 ## Alternate distribution branches
 
 | Branch | What it carries |
 |---|---|
-| [`pwa-server`](../../tree/pwa-server) | Pre-built PWA server distribution (alternate to the Release zip — same content) |
-| [`windows`](../../tree/windows) | Windows desktop binary (alternate to the Release zip — same content) |
-| [`explorestars-lite`](../../tree/explorestars-lite) | **Legacy** — final v1.3.3.x release of the predecessor ExplorestarsLite app, kept frozen as a record. New users should install ExploreStars Envision instead. |
+| [`pwa-server`](https://github.com/wesmcd6/pmc8-tools/tree/pwa-server) | Pre-built PWA server distribution (alternate to the Release zip — same content) |
+| [`windows`](https://github.com/wesmcd6/pmc8-tools/tree/windows) | Windows desktop binary (alternate to the Release zip — same content) |
+| [`explorestars-lite`](https://github.com/wesmcd6/pmc8-tools/tree/explorestars-lite) | **Legacy** — final v1.3.3.x release of the predecessor ExplorestarsLite app, kept frozen as a record. New users should install ExploreStars Envision instead. |
 
 ## About ExploreStars Envision&trade;
 

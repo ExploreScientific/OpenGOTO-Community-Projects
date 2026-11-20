@@ -8,7 +8,7 @@ Projects may include application executables, installation programs, documentati
 
 The goal of this repository is to provide a visible, organized, and reviewable place for community tools before they are announced, mirrored, packaged, or referenced from Explore Scientific support pages.
 
-This repository is not a replacement for the official PMC-Eight firmware, ASCOM driver, INDI driver, or ExploreStars Envision repositories. It is for community-developed tools and utilities that may be useful to PMC-Eight users.
+This repository is not a replacement for the official PMC-Eight firmware, ASCOM driver, INDI driver, or Envision the Heavens repositories. It is for community-developed tools and utilities that may be useful to PMC-Eight users.
 
 ## Repository Layout
 
@@ -32,7 +32,7 @@ This keeps all OpenGOTO community projects together while still giving each proj
 | --- | --- | --- | --- |
 | PMC-Eight ALPACA Server | Prosaic Alto / upstream maintainer nigeldun | Current upstream release v1.2.2 mirrored for Windows, Linux, and macOS | `projects/PMC-Eight-ALPACA-Server` |
 | PMC8 Tools | Wes McDonald | Public multi-branch tool collection indexed; selected release mirrors published | `projects/PMC8-Tools` |
-| PMC8 Dashboard | Wes McDonald | Source, documentation, notices, launch helpers, and v0.2.0 release published | `projects/PMC8-Dashboard` |
+| PMC8 Dashboard | Wes McDonald | Source, documentation, notices, launch helpers, and v0.2.7 release published | `projects/PMC8-Dashboard` |
 | Spiral Search Bridge | Wes McDonald | Documentation, notices, checksums, and v2.0 release mirrored | `projects/Spiral-Search-Bridge` |
 
 ## Latest PMC-Eight ALPACA Server Mirror
@@ -90,3 +90,10 @@ Community projects should be reviewed by Explore Scientific before public announ
 ## Public Support Notice
 
 Unless a project is explicitly identified as officially supported by Explore Scientific, community projects should be treated as community contributions. Explore Scientific may host or reference them as a convenience to PMC-Eight users while preserving appropriate contributor credit.
+
+## Public mirror refresh — 2026-11-20
+
+- [Dashboard v0.2.7](https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-dashboard-v0.2.7): Windows, macOS and Linux downloads, source and guides.
+- [ESP8266 serial recovery v1.1](https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/esp8266-serial-flash-v1.1): ESP8266 hardware only; distinct from ESP32 recovery.
+- [Browser tools source snapshot](https://github.com/ExploreScientific/OpenGOTO-Community-Projects/tree/main/projects/PMC8-Browser-Tools) and [download](https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-browser-tools-20261120).
+- Envision documentation refreshed for [2.6.1.0](https://github.com/ExploreScientific/Envision-the-Heavens-Releases/releases/tag/v2.6.1.0); app downloads remain in the dedicated Envision mirror.

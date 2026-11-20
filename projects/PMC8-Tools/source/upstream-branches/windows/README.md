@@ -4,13 +4,13 @@ Native Windows desktop app for controlling Explore Scientific&trade; PMC-Eight&t
 
 ## Download
 
-📦 **[Get the latest Windows zip from the Releases page →](../../releases/latest)**
+📦 **[Get the latest Windows zip from the Releases page →](https://github.com/wesmcd6/pmc8-tools/releases/latest)**
 
 Look for the asset named:
 
 > `ExploreStars-Envision-vX.Y.Z.W-windows.zip`
 
-The Releases page also keeps every prior version available, so if you need a specific older build you can pick it from the [release list](../../releases).
+The Releases page also keeps every prior version available, so if you need a specific older build you can pick it from the [release list](https://github.com/wesmcd6/pmc8-tools/releases).
 
 > **Note:** This branch used to ship a copy of the Windows zip directly. As of v2.1.0.2 it's a thin pointer — binaries live on the GitHub Releases page where versioning, changelogs, download counts, and historical builds are handled natively.
 
@@ -37,10 +37,12 @@ Connect to your PMC-Eight via Wi-Fi or Serial (USB / Bluetooth virtual COM port)
 ## Features
 
 See the built-in user manual (? icon in the app) or the
-[`explorestars-envision`](../../tree/explorestars-envision) branch for the full feature list.
+[`envision`](https://github.com/wesmcd6/pmc8-tools/tree/envision) branch for the full feature list.
 
 ## Trademarks
 
-ExploreStars Envision&trade; is a trademark of Wes McDonald. Explore Scientific&trade; and PMC-Eight&trade; are trademarks of Explore Scientific, LLC. ExploreStars Envision&trade; is an independent application authored and owned by Wes McDonald; if Explore Scientific, LLC recommends, endorses, promotes, or distributes it, that should be understood as support for an independently authored application within the PMC-Eight&trade; ecosystem, not as Explore Scientific authorship or ownership of the app.
+Envision the Heavens&trade; (formerly ExploreStars Envision) is a trademark of Wes McDonald. Explore Scientific&trade;, ExploreStars&trade;, and PMC-Eight&trade; are trademarks of Explore Scientific, LLC, and are used here with acknowledgement.
+
+Envision the Heavens&trade; is an independent application that controls Explore Scientific&trade; PMC-Eight&trade; telescope mounts. The application code and project materials are authored and owned by Wes McDonald except where third-party credits are listed in `LICENSES.md`. If Explore Scientific, LLC recommends, endorses, promotes, or distributes the app, that endorsement should be understood as support for use of an independently authored application within the PMC-Eight ecosystem, not as Explore Scientific authorship or ownership of the app.
 
 Copyright © 2026 Wes McDonald. All rights reserved.

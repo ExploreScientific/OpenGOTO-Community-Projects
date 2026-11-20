@@ -1,0 +1,1389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PMC-Eight tools</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>PMC-Eight tools</h1>
+  <p class="sub">Talk to the mount over USB or Wi-Fi, straight from the browser.
+     Open a section to use it.</p>
+
+  <div id="unsupported" class="notice" hidden></div>
+
+  <!-- 1 ─────────────────────────────────────────────────────────────────── -->
+  <details class="card tool" id="s-connect" open>
+    <summary>Connect</summary>
+
+    <div class="row" style="margin-top:.9rem">
+      <label>over
+        <select id="how" class="inp">
+          <option value="serial">USB cable</option>
+          <option value="http">Wi-Fi</option>
+        </select>
+      </label>
+      <label>mount address
+        <input id="mounthost" type="text" inputmode="decimal" placeholder="192.168.1.50"
+               class="inp" style="width:11rem">
+      </label>
+      <span id="wifinote" class="t-dim"></span>
+    </div>
+
+    <div class="row" style="margin-top:.9rem">
+      <button id="go" class="primary">Connect</button>
+      <button id="disconnect" disabled>Disconnect</button>
+      <span id="conn" class="t-dim">not connected</span>
+    </div>
+    <div id="connstatus" class="status" hidden></div>
+
+    <p class="t-dim" style="margin:.8rem 0 0">
+      <strong>USB resets the mount when the port opens</strong> — Windows asserts DTR
+      while configuring it, and DTR is the Propeller's reset line. Nothing in the
+      browser can prevent that, so the first 15–20&nbsp;seconds of "no reply yet" are
+      the mount rebooting. It happens once; the port then stays open.
+      <strong>Wi-Fi does not reset the mount</strong>, but cannot reach the ESP
+      firmware version or load firmware.</p>
+
+    <p class="t-dim" style="margin:.6rem 0 0">
+      <strong>Wi-Fi needs the ES HTTP bridge</strong> (port 80). An
+      <strong>RN-131</strong>, or an ESP8266/ESP32 on older firmware, speaks raw TCP
+      on 54372 instead — and a browser cannot open a raw socket, so those mounts are
+      USB-only here. An ESP8266 or ESP32 running the current bridge firmware connects
+      over Wi-Fi normally.</p>
+  </details>
+
+  <!-- 2 ─────────────────────────────────────────────────────────────────── -->
+  <details class="card tool" id="s-settings">
+    <summary>Get and change settings</summary>
+
+    <div class="row" style="margin-top:.9rem">
+      <button id="read" class="primary">Read settings from the mount</button>
+      <span id="readhint" class="t-dim"></span>
+    </div>
+    <div id="readstatus" class="status" hidden></div>
+
+    <div id="result" hidden></div>
+  </details>
+
+  <!-- 3 ─────────────────────────────────────────────────────────────────── -->
+  <details class="card tool" id="s-firmware">
+    <summary>Firmware upload</summary>
+
+    <span class="badge permanent" style="margin-top:.9rem">Permanent</span>
+    <p>Writes a new Propeller (P1) image to the mount's EEPROM and runs it, then reads
+       the version back to prove it took. This is the <strong>mount brain</strong>, not
+       the Wi-Fi module. <strong>USB only.</strong></p>
+
+    <div class="row"><input type="file" id="file" accept=".binary,.bin"></div>
+    <div id="fileinfo" class="t-dim" style="margin-top:.6rem">No image chosen.</div>
+
+    <div class="row" style="margin-top:.9rem">
+      <button id="upload" class="danger" disabled>Update firmware</button>
+      <span id="upstate" class="verdict" hidden></span>
+      <span id="uphint" class="t-dim"></span>
+    </div>
+    <div id="upstatus" class="status" hidden></div>
+    <div id="upversion" class="verdict-detail" hidden></div>
+    <div id="upconfirm" style="margin-top:.6rem"></div>
+    <progress id="prog" hidden></progress>
+  </details>
+
+  <!-- 4 ─────────────────────────────────────────────────────────────────── -->
+  <details class="card tool" id="s-network">
+    <summary>Network</summary>
+
+    <p style="margin-top:.9rem">Join the mount's Wi-Fi module to your home network, or
+       read the address it already has. <strong>USB only</strong> — Wi-Fi cannot
+       configure Wi-Fi, it would cut the link carrying the request.</p>
+
+    <div class="row" style="margin-top:.9rem">
+      <label>Wi-Fi module
+        <select id="netmodule" class="inp">
+          <option value="ESP32">ESP32</option>
+          <option value="ESP8266">ESP8266</option>
+          <option value="RN131">RN131</option>
+        </select>
+      </label>
+      <label>SSID
+        <input id="netssid" type="text" autocomplete="off" class="inp" style="width:12rem"
+               placeholder="Home Wi-Fi SSID">
+      </label>
+      <label>Password
+        <span class="pw-wrap">
+          <input id="netpass" type="password" autocomplete="off" class="inp"
+                 placeholder="Home Wi-Fi password">
+          <button type="button" id="netpeek" class="pw-peek" aria-label="Show password"
+                  title="Show password">👁</button>
+        </span>
+      </label>
+    </div>
+
+    <div class="row" style="margin-top:.9rem">
+      <button id="netjoin" class="danger" disabled>Configure for home network</button>
+      <button id="netip" disabled>Get Wi-Fi address</button>
+      <span id="nethint" class="t-dim"></span>
+    </div>
+    <div id="netstatus" class="status" hidden></div>
+    <div id="netresult" class="verdict-detail" hidden></div>
+    <div id="netconfirm" style="margin-top:.6rem"></div>
+    <p id="netnote" class="t-dim" style="margin:.8rem 0 0"></p>
+  </details>
+
+  <!-- 5 ─────────────────────────────────────────────────────────────────── -->
+  <details class="card tool" id="s-rn131">
+    <summary>Restore RN131</summary>
+
+    <span class="badge permanent" style="margin-top:.9rem">Permanent</span>
+    <p>Writes the Explore Scientific factory configuration back to an
+       <strong>RN-131</strong> Wi-Fi module and reboots it — the same sequence UFCT
+       sends. Use it when the module's settings have been lost or changed and it no
+       longer joins a network. <strong>USB only</strong>, and only for RN-131: ESP8266
+       and ESP32 modules are configured a completely different way.</p>
+    <p class="t-dim">It restores the soft-AP at <code>192.168.47.1</code>, device id and
+       passphrase <code>PMC-Eight</code>, and port <code>54372</code>. Any home-network
+       settings on the module are replaced.</p>
+    <p class="t-warn"><strong>Disconnect anything else talking to the mount over
+       Wi-Fi first</strong> — an app or PWA polling the mount shares the same Wi-Fi
+       module, and its traffic knocks the module out of command mode partway
+       through.</p>
+
+    <div class="row" style="margin-top:.9rem">
+      <button id="rnrestore" class="danger" disabled>Restore RN131</button>
+      <span id="rnstate" class="verdict" hidden></span>
+      <span id="rnhint" class="t-dim"></span>
+    </div>
+    <div id="rnstatus" class="status" hidden></div>
+    <div id="rnresult" class="verdict-detail" hidden></div>
+    <div id="rnconfirm" style="margin-top:.6rem"></div>
+    <progress id="rnprog" hidden></progress>
+  </details>
+
+  <!-- 6 ─────────────────────────────────────────────────────────────────── -->
+  <details class="card tool" id="s-console">
+    <summary>Command console</summary>
+
+    <p class="t-dim" style="margin:.9rem 0 0">Send any ES command and see the raw reply.</p>
+
+    <div class="row" style="margin-top:.9rem">
+      <label style="flex:1 1 100%">command
+        <select id="cmdsel" class="inp" style="width:100%;max-width:34rem"></select>
+      </label>
+    </div>
+    <div id="cmddesc" class="t-dim" style="margin:.5rem 0"></div>
+    <div id="cmdparams" class="row"></div>
+
+    <div class="row" style="margin-top:.9rem">
+      <label style="flex:1 1 100%">or type it yourself
+        <input id="cmdraw" type="text" autocomplete="off" spellcheck="false" placeholder="ESGv!"
+               class="inp mono" style="width:100%;max-width:34rem">
+      </label>
+    </div>
+    <p class="t-dim" style="margin:.4rem 0 0">Typing here overrides the selection above.</p>
+
+    <div class="row" style="margin-top:.9rem">
+      <button id="send" class="primary">Send</button>
+      <span id="cmdhint" class="t-dim"></span>
+    </div>
+    <div id="cmdreply" class="verdict-detail" hidden></div>
+  </details>
+
+  <section id="logbox">
+    <div class="logbox-head">
+      <span>Log</span>
+      <span class="row" style="gap:.4rem">
+        <button id="copy">Copy</button>
+        <button id="clear">Clear</button>
+      </span>
+    </div>
+    <div id="log"></div>
+  </section>
+</main>
+
+<script type="module">
+import { SerialTransport, requestPort } from './src/p1-serial.js';
+import { SerialLink, HttpLink, serialAvailable, normalizeHost } from './src/mount-link.js';
+import {
+  identify, settingsRows, readEnvision, readEspVersion,
+  setEnvisionBoot, fastServerText, ask, parseESGv,
+  versionTokenFromFilename, versionMatchesToken,
+} from './src/pmc8-identify.js';
+import {
+  EDITABLE_FIELDS, READ_ONLY_FIELDS, currentValues, changedFields,
+  buildESSi, displayValue, writeSettings,
+} from './src/pmc8-settings.js';
+import { COMMANDS, RISK_LABEL, buildCommand, classify } from './src/pmc8-commands.js';
+import { restoreRn131 } from './src/pmc8-rn131.js';
+import { readWifiAddress, configureHomeNetwork } from './src/pmc8-network.js';
+import { P1Loader } from './src/p1-loader.js';
+import { RUN_FROM_RAM, EEPROM_RUN, estimateSeconds, buildPayload } from './src/p1-protocol.js';
+
+const $ = (id) => document.getElementById(id);
+const logEl = $('log');
+
+/**
+ * Connections are cached PER TRANSPORT, not swapped.
+ *
+ * Opening the serial port resets the mount and costs 15-20s to come back, so
+ * once it is open it stays open — switching to Wi-Fi and back must not pay that
+ * again. `link` is whichever one is currently in use; `serialLink` and
+ * `httpLink` are held independently and only released by Disconnect or by the
+ * page going away.
+ */
+let serialLink = null;
+let httpLink = null;
+let link = null;
+let image = null;
+let imageName = '';   // the filename carries the version we are meant to end up at
+
+// Result latches, declared here because refresh() reads them and runs during
+// module init — declaring them next to their sections put them in the temporal
+// dead zone at that point.
+let fwDone = false;
+let rnDone = false;
+
+/**
+ * An HTTPS page cannot call a plain-HTTP mount: browsers block it as mixed
+ * content and fetch() reports it as an opaque TypeError. Say so before the
+ * attempt rather than after.
+ *
+ * This is the standing trade-off of hosting the page. Web Serial REQUIRES a
+ * secure context, and the Wi-Fi transport requires the page NOT be one — no
+ * single origin satisfies both.
+ */
+const HTTPS_BLOCKS_WIFI = window.location.protocol === 'https:';
+
+// The last successful read, so reopening the settings section shows what we
+// already know instead of a blank panel.
+let lastInfo = null;
+const view = { baud: 115200, envision: null, esp: null };
+
+// Opening a tool closes the others, so there is only ever one thing on screen
+// and the log below always belongs to what you are looking at.
+for (const d of document.querySelectorAll('details.tool')) {
+  d.addEventListener('toggle', () => {
+    if (!d.open) return;
+    for (const other of document.querySelectorAll('details.tool')) {
+      if (other !== d) other.open = false;
+    }
+  });
+}
+
+function log(msg, cls = '') {
+  const t = new Date().toISOString().slice(11, 23);
+  const line = document.createElement('div');
+  if (cls) line.className = cls;
+  line.textContent = `${t}  ${msg}`;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => (
+  { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+/**
+ * A single overwriting status line next to the button that started the work.
+ *
+ * The log is a scrolling panel at the bottom of the page and is often off
+ * screen — during a 20-second connect there was nothing visible saying anything
+ * was happening at all. This shows the latest message in place, with a spinner
+ * while it is working.
+ */
+function busy(id, text) {
+  const el = $(id);
+  el.hidden = false;
+  el.className = 'status busy';
+  el.textContent = text;
+}
+function settled(id, text, ok) {
+  const el = $(id);
+  el.hidden = false;
+  el.className = `status ${ok ? 't-ok' : 't-err'}`;
+  el.textContent = text;
+}
+function clearStatus(id) {
+  const el = $(id);
+  el.hidden = true;
+  el.className = 'status';   // drop `busy` so the spinner cannot survive
+  el.textContent = '';
+}
+
+/** Progress sink that both logs and keeps the on-screen line current. */
+const progressTo = (id) => (m) => { log(m); busy(id, m.trim()); };
+
+function row(k, v, extra) {
+  return `<tr><th>${esc(k)}</th><td class="val">${esc(v)}${
+    extra ? `<br><span class="t-dim">${esc(extra)}</span>` : ''}</td></tr>`;
+}
+
+/**
+ * Firmware upload needs the serial port, but not necessarily the ACTIVE link —
+ * the port stays open across a switch to Wi-Fi, so it is still usable.
+ */
+const hasSerial = () => !!serialLink;
+
+/** Enable/disable every tool according to what is connected and loaded. */
+function refresh() {
+  $('disconnect').disabled = !serialLink && !httpLink;
+  const held = (serialLink && link !== serialLink) ? ' · serial port still open' : '';
+  $('conn').textContent = link ? `connected — ${link.label}${held}` : 'not connected';
+  $('conn').className = link ? 't-ok' : 't-dim';
+
+  $('read').disabled = !link;
+  $('readhint').textContent = link ? '' : 'Connect first.';
+
+  $('send').disabled = !link;
+
+  const fwBlock = !hasSerial() ? 'Connect over USB first — firmware upload needs the cable.'
+                : !image ? 'Choose a firmware image.'
+                : null;
+  // Leave the button alone once it is showing the FIRMWARE UPDATED result —
+  // that state is the report, and it stands until the section is revisited.
+  if (!fwDone) {
+    $('upload').disabled = !!fwBlock;
+    $('uphint').textContent = fwBlock ?? '';
+  }
+
+  refreshNetwork();
+  refreshRn131();
+}
+
+// --- firmware result indicator ---------------------------------------------
+
+/** Show the outcome next to the button, with the resulting version beneath. */
+function setFirmwareResult(ok, headline, detail) {
+  fwDone = true;
+  // The verdict replaces the running commentary — stop every moving thing.
+  clearStatus('upstatus');
+  $('prog').hidden = true;
+  const btn = $('upload');
+  btn.textContent = ok ? 'FIRMWARE UPDATED' : 'UPDATE FAILED';
+  btn.className = ok ? 'ok-btn' : 'danger';
+  btn.disabled = true;
+  $('uphint').textContent = '';
+
+  const state = $('upstate');
+  state.hidden = false;
+  state.textContent = ok ? '✓' : '✕';
+  state.className = `verdict ${ok ? 'good' : 'bad'}`;
+
+  const ver = $('upversion');
+  ver.hidden = false;
+  ver.className = `verdict-detail ${ok ? 'good' : 'bad'}`;
+  ver.innerHTML = `<strong>${esc(headline)}</strong>` +
+                  (detail ? `<br><span class="t-dim">${esc(detail)}</span>` : '');
+}
+
+/** Revisiting the section clears the result and re-arms the button. */
+function clearFirmwareResult() {
+  if (!fwDone) return;
+  fwDone = false;
+  const btn = $('upload');
+  btn.textContent = 'Update firmware';
+  btn.className = 'danger';
+  $('upstate').hidden = true;
+  $('upversion').hidden = true;
+  refresh();
+}
+$('s-firmware').addEventListener('toggle', () => {
+  if ($('s-firmware').open) clearFirmwareResult();
+});
+
+// The two transports want opposite things from the page's own origin: Web
+// Serial requires HTTPS, and reaching a plain-HTTP mount requires that the page
+// NOT be HTTPS. So a hosted copy can do USB, and a locally served copy can do
+// both — which is worth explaining rather than leaving as a puzzle.
+if (!serialAvailable() || HTTPS_BLOCKS_WIFI) {
+  const el = $('unsupported');
+  el.hidden = false;
+  el.className = 'notice';
+
+  if (!serialAvailable() && HTTPS_BLOCKS_WIFI) {
+    el.innerHTML = '<strong>This browser cannot reach the mount from this page.</strong><br>' +
+      'It has no Web Serial (that is desktop Chrome, Edge and Opera only), and this ' +
+      'page is served over <code>https://</code>, which browsers forbid from calling ' +
+      'a plain-HTTP mount. Run the page over <code>http://</code> from a machine on ' +
+      'your network and Wi-Fi will work here.';
+  } else if (!serialAvailable()) {
+    el.innerHTML = '<strong>No USB on this browser.</strong> Web Serial is desktop ' +
+      'Chrome, Edge and Opera only, so firmware upload and the module-version read ' +
+      'are unavailable. Wi-Fi works: enter the mount\'s address below.';
+    $('how').value = 'http';
+    $('how').querySelector('option[value=serial]').disabled = true;
+  } else {
+    el.innerHTML = '<strong>Wi-Fi is unavailable on this hosted copy.</strong> ' +
+      'The page is served over <code>https://</code> and browsers block an HTTPS ' +
+      'page from calling a plain-HTTP mount. USB works normally — in fact Web ' +
+      'Serial requires HTTPS, so the two cannot both be satisfied by one origin. ' +
+      'For Wi-Fi, serve the page over <code>http://</code> on your own network.';
+  }
+}
+
+function refreshHow() {
+  const wifi = $('how').value === 'http';
+  // An RN-131 speaks raw TCP only, so Wi-Fi from a browser is impossible for
+  // it — say so up front rather than after a failed attempt. We know the
+  // module from ESGi!'s `w` field once the settings have been read.
+  const isRn131 = lastInfo?.wifiType === 0;
+  $('mounthost').disabled = !wifi || HTTPS_BLOCKS_WIFI;
+  $('mounthost').style.opacity = wifi && !HTTPS_BLOCKS_WIFI ? '1' : '0.4';
+  $('wifinote').textContent = !wifi ? '(Wi-Fi only)'
+    : HTTPS_BLOCKS_WIFI ? 'unavailable on https:// — see below'
+    : isRn131 ? 'RN-131 has no HTTP bridge — USB only'
+    : '';
+  $('wifinote').className = wifi && (HTTPS_BLOCKS_WIFI || isRn131) ? 't-warn' : 't-dim';
+}
+
+if (HTTPS_BLOCKS_WIFI) {
+  $('how').querySelector('option[value=http]').disabled = true;
+  $('how').value = serialAvailable() ? 'serial' : 'http';
+}
+
+/*
+ * Served BY the mount? Then we already know its address — it is the one in the
+ * address bar. Filling it in is the difference between "open the page and press
+ * Connect" and "open the page, then type the address of the machine you just
+ * loaded it from", which is a silly thing to ask.
+ *
+ * Three conditions, and the port one is the subtle one:
+ *
+ *   - plain http. The mount has no TLS, and on an https copy the Wi-Fi
+ *     transport is blocked as mixed content anyway.
+ *   - not loopback. A dev server's hostname is this PC, not a mount.
+ *   - DEFAULT PORT. The mount's bridge serves on :80. `serve.bat` deliberately
+ *     binds 0.0.0.0 on :8765 and tells you to open http://<pc-ip>:8765/ from a
+ *     phone — and there the hostname is the PC serving the page, NOT the mount
+ *     the user wants to reach. Without this check that case gets confidently
+ *     prefilled with the wrong address, which is worse than an empty box.
+ *
+ * The value stays editable — a default, not a lock — so a mount reached at a
+ * different address than the page still works.
+ */
+if (!HTTPS_BLOCKS_WIFI
+    && window.location.port === ''
+    && !['localhost', '127.0.0.1', '[::1]', ''].includes(window.location.hostname)
+    && !$('mounthost').value) {
+  $('mounthost').value = window.location.hostname;
+}
+
+$('how').addEventListener('change', refreshHow);
+refreshHow();
+refresh();
+
+// --- 1. connect -------------------------------------------------------------
+
+$('go').addEventListener('click', async () => {
+  const label = $('go').textContent;
+  $('go').disabled = true;
+  $('go').textContent = 'Connecting…';
+  busy('connstatus', 'Connecting…');
+  const how = $('how').value;
+  let fresh = false;
+  try {
+    if (how === 'http') {
+      const wantHost = normalizeHost($('mounthost').value);
+      // A different address means a different link; the same one is reusable
+      // because HttpLink holds no connection, only a target.
+      if (httpLink && httpLink.host !== wantHost) {
+        await httpLink.close();
+        httpLink = null;
+      }
+      if (!httpLink) { httpLink = new HttpLink($('mounthost').value); fresh = true; }
+      link = httpLink;
+      log(`Using ${link.label}…`);
+      busy('connstatus', `Contacting ${link.host}…`);
+    } else if (serialLink) {
+      // The whole point of holding it: no reopen, so no reset, so no 20s wait.
+      link = serialLink;
+      log('Re-using the serial port that is already open — no reset.');
+      busy('connstatus', 'Checking the mount is still answering…');
+    } else {
+      busy('connstatus', 'Waiting for you to pick a port…');
+      const port = await requestPort();
+      const t = new SerialTransport(port, { baudRate: 115200, log });
+      try {
+        await t.open();
+      } catch (e) {
+        throw new Error(
+          `Could not open the serial port: ${e.message}. Windows will not share a ` +
+          'COM port — close UFCT, the PMC8 Dashboard or any other tool holding it.');
+      }
+      serialLink = new SerialLink(t);
+      link = serialLink;
+      fresh = true;
+      log('Port open. The mount is resetting; the next 15-20s of silence is expected.', 't-dim');
+      busy('connstatus', 'Port open — the mount is resetting, this takes 15-20s…');
+    }
+
+    // Prove the link before calling it connected. On a reused serial port this
+    // answers immediately, which is the confirmation that holding it worked.
+    //
+    // Wi-Fi gets a short window and no reset language: there is nothing to wait
+    // out, so either the mount answers or the address is wrong.
+    const overWifi = link.kind === 'http';
+    const v = await readVersion(
+      link,
+      overWifi ? 8 : (fresh ? 40 : 10),
+      overWifi ? `Contacting ${link.host}` : 'Waiting for the mount to reboot',
+      'connstatus');
+    if (!v) {
+      throw new Error(overWifi
+        ? `${link.host} answered, but not with an ESGv! reply. Check that this is ` +
+          'the mount\'s address and not another device on the network.'
+        : 'The mount never answered ESGv!.');
+    }
+    log(`Connected. Mount firmware: ${v}`, 't-ok');
+    settled('connstatus', `Connected over ${link.label}. Mount firmware: ${v}`, true);
+  } catch (e) {
+    // Only discard what this attempt created. A working serial port must
+    // survive a failed Wi-Fi attempt.
+    if (fresh && link) {
+      try { await link.close(); } catch { /* already gone */ }
+      if (link === serialLink) serialLink = null;
+      if (link === httpLink) httpLink = null;
+    }
+    link = null;
+    log(e.message, 't-err');
+    settled('connstatus', e.message, false);
+  } finally {
+    $('go').disabled = false;
+    $('go').textContent = label;
+    refresh();
+  }
+});
+
+$('disconnect').addEventListener('click', async () => {
+  // Explicit disconnect releases everything, including the held serial port.
+  if (serialLink) { try { await serialLink.close(); } catch { /* already gone */ } }
+  if (httpLink) { try { await httpLink.close(); } catch { /* already gone */ } }
+  serialLink = null; httpLink = null; link = null;
+  lastInfo = null;
+  $('result').hidden = true;
+  clearStatus('connstatus');
+  log('Disconnected. Serial port released.', 't-dim');
+  refresh();
+});
+
+// Give the serial port back when the page goes away. Chrome would release it on
+// tab close anyway, but a reload or a navigation should not leave the port held
+// against the next attempt. Fire and forget — unload cannot await.
+window.addEventListener('pagehide', () => {
+  try { serialLink?.transport?.port?.close?.(); } catch { /* nothing to do here */ }
+});
+
+/** Poll ESGv! until the firmware answers. `statusId` gets a live countdown. */
+async function readVersion(target, seconds, why, statusId) {
+  const send = target.send
+    ? (c, o) => target.send(c, o)
+    : (c, o) => ask(target, c, o);
+  // Waiting out silence is a SERIAL behaviour: opening the port resets the
+  // mount, so 15-20s of nothing is expected and polling is right. Over Wi-Fi
+  // nothing is being reset — a failed fetch means the address is unreachable,
+  // and polling it for 40s just imitates the USB reset wait for no reason.
+  const overWifi = target.kind === 'http';
+  const deadline = Date.now() + seconds * 1000;
+  let attempt = 0;
+  while (Date.now() < deadline) {
+    attempt++;
+    const left = Math.ceil((deadline - Date.now()) / 1000);
+    log(`  ${why} — ESGv! attempt ${attempt} (${left}s left)`);
+    if (statusId) busy(statusId, `${why}… ${left}s left (try ${attempt})`);
+    try {
+      const raw = await send('ESGv!', { expect: 'ESGv', timeoutMs: 2000 });
+      if (raw.includes('ESGv')) return parseESGv(raw);
+    } catch (e) {
+      // HttpLink's message already names the address and the likely cause.
+      if (overWifi) throw e;
+      /* serial: still rebooting, keep waiting */
+    }
+    await new Promise((r) => setTimeout(r, 700));
+  }
+  return null;
+}
+
+// --- 2. settings ------------------------------------------------------------
+
+const INPUT_STYLE = 'font:inherit;background:var(--panel-2);color:var(--ink);' +
+                    'border:1px solid var(--line);border-radius:6px;padding:.3rem .45rem;';
+
+function editableRows(cfg) {
+  const now = currentValues(cfg);
+  return EDITABLE_FIELDS.map((f) => {
+    const v = now[f.key];
+    const control = f.kind === 'select'
+      ? `<select id="f_${f.key}" style="${INPUT_STYLE}">${
+          f.options.map((o) =>
+            `<option value="${o.value}"${Number(o.value) === Number(v) ? ' selected' : ''}>${
+              esc(o.label)}</option>`).join('')}</select>`
+      : `<input id="f_${f.key}" type="number" inputmode="numeric" min="${f.min}"
+              max="${f.max}" value="${esc(v)}" style="${INPUT_STYLE}width:7rem">`;
+    const note = f.key === 'p9' ? `P9 = ${cfg.p9}` : null;
+    return `<tr><th>${esc(f.label)}</th><td class="val">${control}${
+      note ? `<br><span class="t-dim">${esc(note)}</span>` : ''}</td></tr>`;
+  }).join('\n');
+}
+
+function readOnlyRows(cfg) {
+  return READ_ONLY_FIELDS.map((f) => row(
+    f.label,
+    f.key === 'st4Analog' ? (cfg.st4Analog ? 'Analog' : 'Digital') : cfg.wifi,
+    f.reason)).join('\n');
+}
+
+function show(info, baud, envision, esp) {
+  lastInfo = info;
+  view.baud = baud; view.envision = envision; view.esp = esp;
+  const el = $('result');
+  el.hidden = false;
+
+  let espFirmware, moduleHw = '', moduleDetail = '';
+  if (!esp) {
+    espFirmware = row('ESP firmware', 'Not read');
+  } else if (esp.skipped) {
+    espFirmware = row('ESP firmware',
+      esp.why === 'wifi' ? 'Not readable over Wi-Fi' : 'Not applicable — RN-131', esp.reason);
+  } else if (esp.gmr?.bin) {
+    espFirmware = row('ESP firmware', esp.gmr.bin,
+                      esp.gmr.esBranded ? null : 'Not an ES-branded build.');
+  } else {
+    espFirmware = row('ESP firmware', 'Not read',
+                      esp.error ?? 'AT+GMR did not return a Bin version line.');
+  }
+  const g = esp?.gmr;
+  if (g?.tag) {
+    moduleHw = row('Module hardware',
+      g.module ? `${g.module}  (${g.tag})` : `Unrecognized  (${g.tag})`,
+      g.module ? null : 'Tag did not match a known module — please report it.');
+  }
+  if (g?.at) moduleDetail += row('Module AT version', g.at);
+  if (g?.sdk) moduleDetail += row('Module SDK version', g.sdk);
+  if (g?.compileTime) moduleDetail += row('Module compiled', g.compileTime);
+  if (esp && !esp.skipped && esp.rawGmr && !g?.bin) moduleDetail += row('Raw AT+GMR', esp.rawGmr);
+  if (esp && !esp.skipped && !esp.esRestored) {
+    moduleDetail += row('Passthrough', 'ES commands did not answer after exit',
+                        'Power-cycle the mount.');
+  }
+  if (esp?.leftEnvision) {
+    moduleDetail += row('Envision', 'Turned OFF to read the module version',
+                        'Passthrough cannot run in Envision mode. The mount was left out of it.');
+  }
+
+  const fast = row('Envision / Fast Server', envision?.text ?? 'Not read',
+                   envision?.value != null ? `ESGe! = ${envision.value}` : null);
+
+  let bootRow = '';
+  if (envision && envision.value != null) {
+    bootRow = `<tr><th>Boot into Envision</th><td class="val">
+      <select id="f_envboot" style="${INPUT_STYLE}">
+        <option value="1"${envision.boot ? ' selected' : ''}>On</option>
+        <option value="0"${envision.boot ? '' : ' selected'}>Off</option>
+      </select>${envision.able ? '' :
+        '<br><span class="t-dim">This module is not Envision-capable, so the flag ' +
+        'has no effect until its Wi-Fi firmware is updated.</span>'}</td></tr>`;
+  } else if (envision?.skipped) {
+    bootRow = row('Boot into Envision', 'Not available', envision.text);
+  }
+
+  el.innerHTML = `
+    <table style="margin-top:1rem">
+      ${row('Mount firmware', info.firmware)}
+      ${espFirmware}
+      ${moduleHw}
+      ${editableRows(info)}
+      ${readOnlyRows(info)}
+      ${fast}
+      ${bootRow}
+      ${moduleDetail}
+      ${row('Raw ESGi', info.raw)}
+    </table>
+    <div class="row" style="margin-top:1rem">
+      <button id="save" class="danger" disabled>Save to mount</button>
+      <span id="savehint" class="t-dim">Change a value to enable saving.</span>
+    </div>
+    <div id="savelog" style="margin-top:.6rem"></div>
+    <div class="row" style="margin-top:1rem">
+      <button id="copycfg">Copy as text</button>
+    </div>`;
+
+  wireEditor(info, envision);
+
+  $('copycfg').addEventListener('click', () => {
+    const lines = [`Mount firmware: ${info.firmware}`];
+    if (esp?.skipped) lines.push(`ESP firmware: ${esp.why === 'wifi' ? 'not readable over Wi-Fi' : 'not applicable — RN-131'}`);
+    else if (g?.bin) lines.push(`ESP firmware: ${g.bin}`);
+    if (g?.tag) lines.push(`Module hardware: ${g.module ?? 'unrecognized'} (${g.tag})`);
+    for (const r of settingsRows(info)) lines.push(`${r.label}: ${r.value}`);
+    if (envision) lines.push(`Envision / Fast Server: ${envision.text}`);
+    lines.push(`Raw ESGi: ${info.raw}`);
+    navigator.clipboard.writeText(lines.join('\n'));
+    $('copycfg').textContent = 'Copied';
+    setTimeout(() => { $('copycfg').textContent = 'Copy as text'; }, 1500);
+  });
+}
+
+function formValues() {
+  const out = {};
+  for (const f of EDITABLE_FIELDS) out[f.key] = $(`f_${f.key}`).value;
+  return out;
+}
+
+function wireEditor(cfg, envision) {
+  const save = $('save');
+  const hint = $('savehint');
+  const bootEl = $('f_envboot');
+  const bootWas = envision?.boot ? 1 : 0;
+  const bootNow = () => (bootEl ? Number(bootEl.value) : bootWas);
+  const bootChanged = () => !!bootEl && bootNow() !== bootWas;
+  const slog = $('savelog');
+  const put = (m, cls) => {
+    const d = document.createElement('div');
+    if (cls) d.className = cls;
+    d.textContent = m;
+    $('savelog').appendChild(d);
+  };
+
+  const refreshSave = () => {
+    let diff;
+    try {
+      diff = changedFields(cfg, formValues());
+      buildESSi(formValues());
+    } catch (e) {
+      save.disabled = true; hint.textContent = e.message; hint.className = 't-err';
+      return;
+    }
+    const total = diff.length + (bootChanged() ? 1 : 0);
+    save.disabled = total === 0;
+    hint.className = total ? 't-warn' : 't-dim';
+    hint.textContent = total
+      ? `${total} change${total > 1 ? 's' : ''} pending — this writes to EEPROM.`
+      : 'Change a value to enable saving.';
+  };
+
+  for (const f of EDITABLE_FIELDS) {
+    $(`f_${f.key}`).addEventListener('input', refreshSave);
+    $(`f_${f.key}`).addEventListener('change', refreshSave);
+  }
+  if (bootEl) bootEl.addEventListener('change', refreshSave);
+  refreshSave();
+
+  save.addEventListener('click', () => {
+    const diff = changedFields(cfg, formValues());
+    if (!diff.length && !bootChanged()) return;
+    slog.innerHTML = '';
+    const panel = document.createElement('div');
+    panel.className = 'notice';   // amber: a caution before a deliberate act, not a failure
+    let list = diff.map((d) =>
+      `<li>${esc(d.label)}: <strong>${esc(displayValue(d, d.was))}</strong> → ` +
+      `<strong>${esc(displayValue(d, d.now))}</strong>${
+        d.warn ? `<br><span class="t-dim">${esc(d.warn)}</span>` : ''}</li>`).join('');
+    if (bootChanged()) {
+      list += `<li>Boot into Envision: <strong>${bootWas ? 'On' : 'Off'}</strong> → ` +
+              `<strong>${bootNow() ? 'On' : 'Off'}</strong></li>`;
+    }
+    panel.innerHTML = `
+      <div><strong>Write these to the mount's EEPROM?</strong></div>
+      <ul style="margin:.6rem 0;padding-left:1.1rem">${list}</ul>
+      <div class="row">
+        <button class="danger" data-act="go">Yes, write to the mount</button>
+        <button data-act="cancel">Cancel</button>
+      </div>`;
+    slog.appendChild(panel);
+    // Scoped to this panel rather than looked up by id, so a duplicate cannot
+    // steal the click.
+    panel.querySelector('[data-act=cancel]').addEventListener('click', () => {
+      slog.innerHTML = ''; put('Cancelled — nothing was written.', 't-dim');
+    });
+    panel.querySelector('[data-act=go]').addEventListener('click', () => doWrite(panel));
+  });
+
+  async function doWrite(panel) {
+    const values = formValues();
+    const wantBoot = bootNow();
+    const doBoot = bootChanged();
+    const doEssi = changedFields(cfg, values).length > 0;
+    panel.remove();
+    save.disabled = true;
+    try {
+      if (!link) throw new Error('Not connected.');
+
+      // Separate command from ESSi, sent first so a later ESSi rejection does
+      // not hide the fact that this one landed.
+      if (doBoot) {
+        const r = await setEnvisionBoot(link, !!wantBoot, (m) => put(m));
+        if (!r.ok) put(`Boot into Envision: ${r.error}`, 't-err');
+        else {
+          put(`Boot into Envision is now ${wantBoot ? 'ON' : 'OFF'}` +
+              (r.verified ? ' (confirmed by ESGe!).' : ' (not read back).'), 't-ok');
+          if (r.envision) view.envision = { ...r.envision, text: fastServerText(r.envision) };
+        }
+      }
+
+      if (!doEssi) {
+        show({ ...cfg }, view.baud, view.envision, view.esp);
+        put('Done.', 't-ok');
+        return;
+      }
+
+      const res = await writeSettings(link, values, (m) => put(m));
+      if (!res.accepted) {
+        put(res.error, 't-err');
+        put(`Sent: ${res.sent}`, 't-dim');
+        if (res.raw) put(`Reply: ${JSON.stringify(res.raw)}`, 't-dim');
+      } else {
+        const after = changedFields(res.cfg, values);
+        // Re-render from the mount's echo so the baseline resets and the pending
+        // warning clears itself.
+        show({ firmware: cfg.firmware, ...res.cfg }, view.baud, view.envision, view.esp);
+        if (after.length) {
+          put('The mount accepted the command but some values did not stick:', 't-err');
+          for (const d of after) {
+            put(`  ${d.label}: asked for ${displayValue(d, d.now)}, ` +
+                `mount reports ${displayValue(d, d.was)}`, 't-err');
+          }
+        } else put('Saved. The mount echoed back every value as requested.', 't-ok');
+        put(`New raw ESGi: ${res.cfg.raw}`, 't-dim');
+        return;
+      }
+    } catch (e) {
+      put(e.message, 't-err');
+    } finally {
+      save.disabled = false;
+    }
+  }
+}
+
+$('read').addEventListener('click', async () => {
+  $('read').disabled = true;
+  const note = progressTo('readstatus');
+  busy('readstatus', 'Reading settings…');
+  try {
+    if (!link) throw new Error('Connect first.');
+    const info = await identify(link, note);
+
+    let envision = null;
+    try {
+      envision = await readEnvision(link, info, note);
+      log(`Envision / Fast Server: ${envision.text}`);
+    } catch (e) {
+      envision = { text: 'Not read', error: e.message };
+      log(`ESGe! failed: ${e.message}`, 't-err');
+    }
+
+    let esp;
+    if (!link.canPassthrough) {
+      esp = { skipped: true, why: 'wifi',
+              reason: 'Reading it needs passthrough, which would cut the Wi-Fi link ' +
+                      'carrying the request. Connect over USB to see this.' };
+      log('ESP firmware: not readable over Wi-Fi.', 't-dim');
+    } else {
+      try {
+        esp = await readEspVersion(link, info, note);
+      } catch (e) {
+        esp = { skipped: false, error: e.message };
+        log(`ESP firmware read failed: ${e.message}`, 't-err');
+      }
+      if (esp.skipped) log(`ESP firmware skipped: ${esp.reason}`, 't-dim');
+      else if (esp.error) log(`AT+GMR: ${esp.error}`, 't-err');
+      else log(`Module bin version: ${esp.gmr?.bin ?? '(unknown)'}`, 't-ok');
+      if (esp.rawGmr) log(`  raw AT+GMR:\n${esp.rawGmr}`, 't-dim');
+      if (esp.leftEnvision) {
+        log('NOTE: the mount was taken OUT of Envision mode to read this and has ' +
+            'been left that way.', 't-warn');
+      }
+    }
+
+    show(info, view.baud, envision, esp);
+    log('Settings read.', 't-ok');
+    settled('readstatus', `Read OK — ${info.model}, ${info.firmware}`, true);
+  } catch (e) {
+    log(e.message, 't-err');
+    settled('readstatus', e.message, false);
+  } finally {
+    refresh();
+  }
+});
+
+// Reopening the section shows what was already read rather than a blank panel.
+$('s-settings').addEventListener('toggle', () => {
+  if ($('s-settings').open && lastInfo) {
+    $('result').hidden = false;
+    $('readhint').textContent = 'Showing the last read. Read again to refresh.';
+  }
+});
+
+// --- 3. firmware ------------------------------------------------------------
+
+$('file').addEventListener('change', async (ev) => {
+  const f = ev.target.files[0];
+  if (!f) return;
+  imageName = f.name;
+  image = new Uint8Array(await f.arrayBuffer());
+  const digest = await crypto.subtle.digest('SHA-256', image);
+  const hash = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
+  let note = '';
+  try {
+    const payload = buildPayload(image, RUN_FROM_RAM);
+    note = `${payload.length} encoded bytes, ~${estimateSeconds(payload.length).toFixed(1)}s on the wire`;
+  } catch (e) {
+    note = `<span class="t-err">rejected: ${e.message}</span>`;
+    image = null;
+  }
+  const token = versionTokenFromFilename(f.name);
+  $('fileinfo').innerHTML =
+    `<strong>${esc(f.name)}</strong> — ${image ? image.length : f.size} bytes` +
+    `${image ? ` (${image.length / 4} longs)` : ''}<br>SHA-256 ${hash}<br>${note}` +
+    (token
+      ? `<br>Expecting the mount to report <strong>${esc(token)}</strong> afterwards.`
+      : '<br>No version token in the filename, so the result can only be reported, ' +
+        'not checked against what you loaded.');
+  log(`Image: ${f.name}, ${f.size} bytes, sha256 ${hash}`);
+  refresh();
+});
+
+async function runUpdate() {
+  // Always drive the update over the serial port, even if Wi-Fi is the link
+  // currently in use — the boot ROM needs the DTR reset and a raw byte stream.
+  const fw = serialLink;
+  const t = fw.transport;
+
+  log('Reading the current firmware version…');
+  const before = await readVersion(fw, 40, 'Reading the current version', 'upstatus');
+  if (before) log(`Currently running: ${before}`, 't-ok');
+  else log('No ESGv! answer. Continuing, but there will be no before-version to ' +
+           'compare against.', 't-warn');
+
+  const payload = buildPayload(image, EEPROM_RUN);
+  log(`Writing ${image.length} bytes (${image.length / 4} longs) → ${payload.length} ` +
+      `encoded, ~${estimateSeconds(payload.length).toFixed(1)}s on the wire.`);
+
+  $('prog').hidden = false;
+  busy('upstatus', 'Writing to EEPROM — do not disconnect…');
+  const { version, seconds } = await new P1Loader(t, progressTo('upstatus'))
+    .load(image, EEPROM_RUN);
+  log(`Transfer complete in ${seconds.toFixed(1)}s (chip version ${version}).`, 't-ok');
+
+  // Deliberately leave the progress bar running. The transfer finishing is not
+  // the end of the job — the mount still has to reboot, which takes longer than
+  // the write did. Hiding the bar here made it look finished while it sat
+  // silently rebooting.
+  busy('upstatus', 'Transfer done — waiting for the mount to reboot…');
+
+  const after = await readVersion(fw, 40, 'Waiting for the new firmware to boot', 'upstatus');
+  $('prog').hidden = true;
+
+  // Judge the update by what the mount is RUNNING versus what we loaded — not
+  // by whether the version changed. Reloading the same image leaves it
+  // identical, and that is a success. The failure signals are the loader
+  // throwing (handled by the caller) and the mount not answering at all.
+  const token = versionTokenFromFilename(imageName);
+
+  if (!after) {
+    log('The transfer was acknowledged but the mount never answered ESGv!. The image ' +
+        'may have landed without running — do NOT treat this as a successful update.', 't-err');
+    setFirmwareResult(false, 'No version reported',
+      'The transfer was acknowledged but the mount did not answer afterwards. ' +
+      'The image may have landed without running.');
+  } else if (token && !versionMatchesToken(after, token)) {
+    // The one genuine mismatch: we know what we loaded and it is not running.
+    log(`MISMATCH — loaded ${token} but the mount reports ${after}`, 't-err');
+    setFirmwareResult(false, after, `Expected ${token} from ${imageName}. The mount is ` +
+      'running something else, so the image did not take effect.');
+  } else if (token) {
+    log(`UPDATE VERIFIED — mount reports ${after}, matching ${token}`, 't-ok');
+    setFirmwareResult(true, after, before && after === before
+      ? `Matches ${imageName} — same version as before, which is expected when ` +
+        'reloading the same image.'
+      : `Matches ${imageName}${before ? ` — was ${before}` : ''}`);
+  } else if (before && after !== before) {
+    log(`UPDATE VERIFIED — firmware changed  ${before}  →  ${after}`, 't-ok');
+    setFirmwareResult(true, after, `Changed — was ${before}`);
+  } else {
+    log(`Firmware now reports: ${after}`, 't-ok');
+    setFirmwareResult(true, after,
+      `The filename carried no version token, so this is what the mount reports ` +
+      `rather than a match against ${imageName}.`);
+  }
+}
+
+$('upload').addEventListener('click', () => {
+  if (!image || !hasSerial()) return;
+
+  // Render into a container directly under the button, and CLEAR it first.
+  // Appending to the log put the prompt below the command console, far from
+  // what triggered it, and every click stacked another copy — at which point
+  // getElementById bound the handlers to the wrong panel.
+  const host = $('upconfirm');
+  host.innerHTML = '';
+
+  const panel = document.createElement('div');
+  panel.className = 'notice';   // amber: a caution before a deliberate act, not a failure
+  panel.innerHTML = `
+    <div><strong>Write this firmware to the mount's EEPROM?</strong></div>
+    <p style="margin:.5rem 0">This replaces the mount firmware permanently. Have a
+       known-good image to hand, and do not disconnect during the burn.</p>
+    <div class="row">
+      <button class="danger" data-act="go">Yes, update the mount</button>
+      <button data-act="cancel">Cancel</button>
+    </div>`;
+  host.appendChild(panel);
+
+  // Scoped to this panel, so a stale one can never capture the click.
+  panel.querySelector('[data-act=cancel]').addEventListener('click', () => {
+    host.innerHTML = '';
+    log('Cancelled — nothing was written.', 't-dim');
+  });
+  panel.querySelector('[data-act=go]').addEventListener('click', async () => {
+    host.innerHTML = '';
+    $('upload').disabled = true;
+    try {
+      await runUpdate();
+    } catch (e) {
+      log(`UPDATE FAILED: ${e.message}`, 't-err');
+      setFirmwareResult(false, 'Update failed', e.message);
+    } finally {
+      $('prog').hidden = true;
+      refresh();
+    }
+  });
+});
+
+// --- 4. network -------------------------------------------------------------
+
+/** Remember the module and SSID between visits; never the password. */
+const NET_KEY = 'pmc8.network';
+function loadNet() {
+  try {
+    const d = JSON.parse(localStorage.getItem(NET_KEY) ?? '{}');
+    if (d.module) $('netmodule').value = d.module;
+    if (d.ssid) $('netssid').value = d.ssid;
+  } catch { /* nothing saved, or unreadable */ }
+}
+function saveNet() {
+  try {
+    localStorage.setItem(NET_KEY, JSON.stringify({
+      module: $('netmodule').value, ssid: $('netssid').value.trim(),
+    }));
+  } catch { /* private mode, storage full — not worth reporting */ }
+}
+
+function refreshNetwork() {
+  const blocker = !hasSerial() ? 'Connect over USB first — this needs the cable.' : null;
+  $('netjoin').disabled = !!blocker || !$('netssid').value.trim();
+  $('netip').disabled = !!blocker;
+  $('nethint').textContent = blocker ?? ($('netssid').value.trim() ? '' : 'Enter an SSID.');
+
+  const m = $('netmodule').value;
+  // The mount tells us which module is fitted, so a mismatch is worth saying
+  // out loud rather than letting the wrong command set fail mysteriously.
+  const detected = lastInfo?.wifi;
+  const mismatch = detected && !detected.startsWith(m.replace('RN131', 'RN-131'));
+  $('netnote').innerHTML = m === 'RN131'
+    ? 'RN-131: spaces in the SSID or password are sent as "$" (WiFly convention). ' +
+      'Factory defaults are restored from the section below.'
+    : `${m}: no restore needed — the module returns to default on the next mount reboot.`
+    + (mismatch ? `<br><span class="t-warn">The mount reports ${esc(detected)}, ` +
+                  `not ${esc(m)}.</span>` : '');
+}
+
+// Reveal the password on demand. Wi-Fi passwords are long and easy to mistype,
+// and a failed join looks identical whether the password was wrong or the
+// module was busy — so being able to check it is worth more than the masking.
+$('netpeek').addEventListener('click', () => {
+  const el = $('netpass');
+  const show = el.type === 'password';
+  el.type = show ? 'text' : 'password';
+  $('netpeek').textContent = show ? '🙈' : '👁';
+  $('netpeek').setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  $('netpeek').title = show ? 'Hide password' : 'Show password';
+  $('netpeek').classList.toggle('on', show);
+});
+
+$('netmodule').addEventListener('change', () => { saveNet(); refreshNetwork(); });
+$('netssid').addEventListener('input', () => { saveNet(); refreshNetwork(); });
+loadNet();
+
+function netVerdict(ok, headline, detail) {
+  clearStatus('netstatus');
+  const el = $('netresult');
+  el.hidden = false;
+  el.className = `verdict-detail ${ok ? 'good' : 'bad'}`;
+  el.innerHTML = `<strong>${esc(headline)}</strong>` +
+                 (detail ? `<br><span class="t-dim">${esc(detail)}</span>` : '');
+}
+
+$('netip').addEventListener('click', async () => {
+  const module = $('netmodule').value;
+  $('netip').disabled = true;
+  $('netresult').hidden = true;
+  busy('netstatus', `Reading the ${module} address…`);
+  try {
+    const r = await readWifiAddress(link, module, (m, cls) => { log(m, cls); busy('netstatus', m.trim()); });
+    if (r.ip) {
+      netVerdict(true, r.ip, r.apIp ? `Soft-AP address: ${r.apIp}` : null);
+      log(`Wi-Fi address: ${r.ip}`, 't-ok');
+      // Offer it straight to the Wi-Fi transport — that is what it is for.
+      $('mounthost').value = r.ip;
+      saveNet();
+    } else {
+      netVerdict(false, 'No address reported',
+        r.error ?? `Raw reply: ${(r.raw ?? '').replace(/\s+/g, ' ').trim().slice(0, 200)}`);
+    }
+  } catch (e) {
+    log(e.message, 't-err');
+    netVerdict(false, 'Could not read the address', e.message);
+  } finally {
+    refreshNetwork();
+  }
+});
+
+$('netjoin').addEventListener('click', () => {
+  const module = $('netmodule').value;
+  const ssid = $('netssid').value.trim();
+  const host = $('netconfirm');
+  host.innerHTML = '';
+  const panel = document.createElement('div');
+  panel.className = 'notice';
+  panel.innerHTML = `
+    <div><strong>Point the ${esc(module)} at "${esc(ssid)}"?</strong></div>
+    <p style="margin:.5rem 0">This rewrites the module's Wi-Fi settings and reboots it.
+       ${module === 'RN131'
+         ? 'The soft AP at 192.168.47.1 is replaced by the home-network join.'
+         : 'The module returns to its default on the next mount reboot.'}</p>
+    <div class="row">
+      <button class="danger" data-act="go">Yes, configure it</button>
+      <button data-act="cancel">Cancel</button>
+    </div>`;
+  host.appendChild(panel);
+  panel.querySelector('[data-act=cancel]').addEventListener('click', () => {
+    host.innerHTML = '';
+    log('Cancelled — the module was not changed.', 't-dim');
+  });
+  panel.querySelector('[data-act=go]').addEventListener('click', async () => {
+    host.innerHTML = '';
+    $('netjoin').disabled = true;
+    $('netresult').hidden = true;
+    busy('netstatus', 'Starting…');
+    try {
+      const r = await configureHomeNetwork(
+        link, module, ssid, $('netpass').value,
+        (m, cls) => { log(m, cls); busy('netstatus', m.trim()); },
+        (step, total, what) => busy('netstatus', `${step}/${total} — ${what}`));
+
+      if (r.ok && r.ip) {
+        netVerdict(true, r.ip, `${module} joined "${ssid}". Use this address on the ` +
+                               'Connect section to reach the mount over Wi-Fi.');
+        $('mounthost').value = r.ip;
+        log(`Joined. Assigned IP: ${r.ip}`, 't-ok');
+      } else if (r.ok) {
+        netVerdict(false, 'Configured, but no address read', r.error ??
+          'The module may still be joining. Try Get Wi-Fi address in a moment.');
+      } else {
+        netVerdict(false, 'Could not configure the module', r.error);
+      }
+    } catch (e) {
+      log(e.message, 't-err');
+      netVerdict(false, 'Configure failed', e.message);
+    } finally {
+      refreshNetwork();
+    }
+  });
+});
+
+// --- 5. restore RN131 -------------------------------------------------------
+
+function refreshRn131() {
+  if (rnDone) return;
+  // The mount reports the module in ESGi!'s `w` field, so we know before
+  // offering this whether it even applies.
+  const w = lastInfo?.wifiType;
+  const blocker = !hasSerial() ? 'Connect over USB first — this needs the cable.'
+                : w === undefined ? 'Read the settings first, so the module type is known.'
+                : w !== 0 ? `This mount reports ${lastInfo.wifi}, not an RN-131. ` +
+                            'ESP modules are configured a different way.'
+                : null;
+  $('rnrestore').disabled = !!blocker;
+  $('rnhint').textContent = blocker ?? 'RN-131 detected.';
+}
+
+$('s-rn131').addEventListener('toggle', () => {
+  if (!$('s-rn131').open) return;
+  if (rnDone) {                       // revisiting clears the previous verdict
+    rnDone = false;
+    $('rnrestore').textContent = 'Restore RN131';
+    $('rnrestore').className = 'danger';
+    $('rnstate').hidden = true;
+    $('rnresult').hidden = true;
+  }
+  refreshRn131();
+});
+
+$('rnrestore').addEventListener('click', () => {
+  const host = $('rnconfirm');
+  host.innerHTML = '';
+  const panel = document.createElement('div');
+  panel.className = 'notice';
+  panel.innerHTML = `
+    <div><strong>Restore the RN-131 to factory configuration?</strong></div>
+    <p style="margin:.5rem 0">This overwrites the module's settings, including any
+       home-network configuration, and reboots it. It takes about half a minute.
+       Do not disconnect while it runs.</p>
+    <div class="row">
+      <button class="danger" data-act="go">Yes, restore it</button>
+      <button data-act="cancel">Cancel</button>
+    </div>`;
+  host.appendChild(panel);
+  panel.querySelector('[data-act=cancel]').addEventListener('click', () => {
+    host.innerHTML = '';
+    log('Cancelled — the module was not changed.', 't-dim');
+  });
+  panel.querySelector('[data-act=go]').addEventListener('click', async () => {
+    host.innerHTML = '';
+    $('rnrestore').disabled = true;
+    $('rnprog').hidden = false;
+    busy('rnstatus', 'Starting…');
+    try {
+      const res = await restoreRn131(
+        serialLink.transport,
+        (m, cls) => log(m, cls),
+        (step, total, what) => busy('rnstatus', `${step}/${total} — ${what}`));
+
+      rnDone = true;
+      clearStatus('rnstatus');
+      $('rnprog').hidden = true;
+      const ok = res.ok;
+      $('rnrestore').textContent = ok ? 'RN131 RESTORED' : 'RESTORE INCOMPLETE';
+      $('rnrestore').className = ok ? 'ok-btn' : 'danger';
+      $('rnstate').hidden = false;
+      $('rnstate').textContent = ok ? '✓' : '✕';
+      $('rnstate').className = `verdict ${ok ? 'good' : 'bad'}`;
+      $('rnresult').hidden = false;
+      $('rnresult').className = `verdict-detail ${ok ? 'good' : 'bad'}`;
+      const parts = [];
+      if (res.failures.length) {
+        parts.push(`<strong>${res.failures.length} command` +
+          `${res.failures.length > 1 ? 's were' : ' was'} rejected by the module.</strong>` +
+          `<br><span class="t-dim">${esc(res.failures.map((f) => `${f.cmd} → ${f.reply}`).join('; '))}</span>`);
+      }
+      if (res.silent.length) {
+        parts.push(`<strong>${res.silent.length} command(s) were never confirmed</strong>, ` +
+          'so the restore is incomplete.<br><span class="t-dim">' +
+          `${esc(res.silent.join(', '))}</span>`);
+      }
+      if (res.interference) {
+        parts.push('<strong>Another client was using the mount over Wi-Fi.</strong>' +
+          '<br><span class="t-dim">Its traffic shares the Wi-Fi module and knocks it ' +
+          'out of command mode. Close the app or PWA connected to the mount, then ' +
+          'run this again.</span>');
+      }
+      $('rnresult').innerHTML = ok
+        ? '<strong>Factory configuration written and the module rebooted.</strong>' +
+          '<br><span class="t-dim">Every command confirmed. Soft AP <code>PMC-Eight</code> ' +
+          'at 192.168.47.1, port 54372. Power-cycle the mount before connecting.</span>'
+        : parts.join('<hr style="border:0;border-top:1px solid var(--line);margin:.6rem 0">');
+      log(ok ? 'RN131 restore complete.' : 'RN131 restore finished with rejections.',
+          ok ? 't-ok' : 't-err');
+    } catch (e) {
+      log(`RN131 restore failed: ${e.message}`, 't-err');
+      settled('rnstatus', e.message, false);
+    } finally {
+      $('rnprog').hidden = true;
+      refreshRn131();
+    }
+  });
+});
+
+// --- 5. command console -----------------------------------------------------
+
+// Amber, not red: describing what a command does is information, not an error.
+const RISK_CLASS = { read: 't-dim', write: 't-warn', motion: 't-warn', reboot: 't-warn' };
+
+$('cmdsel').innerHTML = COMMANDS
+  .map((c, i) => `<option value="${i}">${esc(c.key)} — ${esc(c.desc)}</option>`).join('');
+
+const currentCmd = () => COMMANDS[Number($('cmdsel').value)] ?? COMMANDS[0];
+
+function renderCmd() {
+  const c = currentCmd();
+  $('cmddesc').innerHTML =
+    `<span class="${RISK_CLASS[c.risk]}">${esc(RISK_LABEL[c.risk])}</span>` +
+    (c.note ? `<br><span class="t-dim">${esc(c.note)}</span>` : '');
+  $('cmdparams').innerHTML = c.params.map((p) =>
+    `<label>${esc(p.label)}
+       <input id="p_${p.name}" type="text" autocomplete="off" spellcheck="false"
+              class="mono" style="${INPUT_STYLE}width:9rem">
+     </label>`).join('');
+  updateHint();
+}
+
+function pendingCommand() {
+  const raw = $('cmdraw').value.trim();
+  if (raw) return { text: raw, meta: classify(raw), typed: true };
+  const c = currentCmd();
+  const values = {};
+  for (const p of c.params) values[p.name] = $(`p_${p.name}`)?.value ?? '';
+  return { text: buildCommand(c, values), meta: c, typed: false };
+}
+
+function updateHint() {
+  try {
+    const { text, meta, typed } = pendingCommand();
+    const risk = meta?.risk ?? 'unknown';
+    $('cmdhint').textContent = `will send ${text}` +
+      (typed ? (meta ? ` — ${RISK_LABEL[risk] ?? ''}` : ' — unrecognised command') : '');
+    $('cmdhint').className = risk === 'read' ? 't-dim' : 't-warn';
+  } catch (e) {
+    $('cmdhint').textContent = e.message;
+    $('cmdhint').className = 't-dim';
+  }
+}
+
+$('cmdsel').addEventListener('change', renderCmd);
+$('cmdraw').addEventListener('input', updateHint);
+$('cmdparams').addEventListener('input', updateHint);
+renderCmd();
+
+// No confirmation gate: this is a console for someone who knows the command set.
+// The risk label beside the button is the warning.
+$('send').addEventListener('click', async () => {
+  let text;
+  try { text = pendingCommand().text; }
+  catch (e) { log(e.message, 't-err'); return; }
+
+  const out = $('cmdreply');
+  const showReply = (ok, body, note) => {
+    out.hidden = false;
+    out.className = `verdict-detail ${ok ? 'good' : 'bad'}`;
+    out.innerHTML = `<span class="mono">${esc(body)}</span>` +
+                    (note ? `<br><span class="t-dim">${esc(note)}</span>` : '');
+  };
+
+  $('send').disabled = true;
+  out.hidden = true;
+  try {
+    if (!link) throw new Error('Not connected.');
+    log(`> ${text}`);
+    const reply = await link.send(text, { timeoutMs: 5000 });
+    if (!reply.trim()) {
+      log('< (no reply)', 't-err');
+      showReply(false, '(no reply)',
+        'Some commands answer nothing by design — a real Envision exit and a ' +
+        'malformed command both look like this.');
+    } else {
+      log(`< ${JSON.stringify(reply)}`, 't-ok');
+      showReply(true, reply.replace(/[\r\n]+/g, ' ').trim());
+    }
+  } catch (e) {
+    log(e.message, 't-err');
+    showReply(false, e.message);
+  } finally {
+    $('send').disabled = false;
+  }
+});
+
+$('copy').addEventListener('click', () => navigator.clipboard.writeText(logEl.innerText));
+$('clear').addEventListener('click', () => { logEl.innerHTML = ''; });
+</script>
+</body>
+</html>

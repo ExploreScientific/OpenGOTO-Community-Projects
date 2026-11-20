@@ -1,0 +1,7 @@
+{
+  "upstream": "wesmcd6/pmc8-tools",
+  "branch": "envision",
+  "commit": "873d66cce8e590e6c521dcdf83a0a91676ea7568",
+  "date": "2026-11-20",
+  "note": "Markdown repository-relative links resolved to the upstream GitHub repository."
+}

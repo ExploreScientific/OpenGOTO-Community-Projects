@@ -7,7 +7,7 @@ factory default — for all three module types, over the existing serial link:
 
   * ESP32   : ESPw42!  + AT+CWMODE=1 / AT+CWJAP / AT+CIPSTA?  (IP via CIPSTA?)
   * ESP8266 : ESPw42!  + AT+CWMODE=1 / AT+CWJAP / AT+CIFSR    (IP via CIFSR)
-  * RN131   : ESPw42   + set wlan ... / save / reboot         (IP via get ip a)
+  * RN131   : ESPw42 then '$$$' + set wlan ... / save / reboot (IP via get ip a)
 
 Restore-to-default:
   * ESP32 / ESP8266 : nothing to do — the module reverts on the next PMC-Eight
@@ -16,10 +16,20 @@ Restore-to-default:
     "PMC-Eight", TCP+UDP 54372) — ported from the UFCT "Restore RN131" routine.
 
 Framing: the PMC-Eight serial passthrough uses '@' as the AT line terminator, so
-commands carry their own '@'. The mode-enter tokens (ESPw42! / ESPw42 /
-ESPw42!$$$) and the passthrough-exit (###@) are sent verbatim. This mirrors the
-Windows VB tools byte-for-byte; only the WinForms shell is replaced by Qt, so it
-runs unchanged on Windows / macOS / Linux.
+commands carry their own '@'. The mode-enter tokens (ESPw42! for the ESP modules,
+ESPw42 for the RN131) and the passthrough-exit (###) are sent verbatim.
+
+The RN131 needs a SECOND step the ESP modules don't. ESPw42 only opens the
+PMC-Eight passthrough; the module itself is still in *data* mode, where it
+forwards received bytes to the TCP link instead of parsing them as commands. A
+bare '$$$' (no '@' terminator, no '!') is the WiFly escape into command mode, and
+the module answers 'CMD'. Leave command mode with 'exit@' when done — '###' only
+closes the PMC-Eight passthrough, and a module left in command mode has no data
+link until it reboots.
+
+The RN131 flows mirror the "Configure PMC8 for Home Network Connection" VB tool;
+the restore mirrors the UFCT "Restore RN131" routine. Only the WinForms shell is
+replaced by Qt, so this runs unchanged on Windows / macOS / Linux.
 
 Requires a SERIAL connection (these commands go to the Propeller, which relays
 them to the WiFi module — not over WiFi).
@@ -193,8 +203,8 @@ class NetworkManagementMixin:
         After flushing, wait `settle` seconds so the module has time to start
         processing before we read its reply. This is what prevents the ESP-AT
         'busy p...' notice that appears when the next read/command arrives too
-        soon. `settle` defaults to `self._net_settle` (set per module — the
-        ESP32 is slower than the ESP8266, so it gets a longer delay).
+        soon. `settle` defaults to `self._net_settle` (set per module — see
+        _net_read_esp_ip for why both ESP families now get the same delay).
         """
         self.serial_port.write(data.encode("ascii"))
         self.serial_port.flush()
@@ -203,15 +213,16 @@ class NetworkManagementMixin:
         if settle:
             time.sleep(settle)
 
-    def _net_read(self, want=None, tries=10, per_read=0.3):
-        """Read up to tries*per_read seconds; stop early once `want` is seen.
+    def _net_read(self, want=None, tries=10, per_read=0.3, stop=None):
+        """Read up to tries*per_read seconds; stop early once `want` is seen (or
+        the optional `stop(acc)` predicate returns True).
 
         The module often replies in bursts with gaps between them, and the
         ESP-AT firmware can interpose a 'busy p...' notice before the real
         result. So when we're waiting for a specific token we keep polling the
         full window across gaps instead of returning at the first pause — a gap
-        is not the end of a slow reply. Only when no token is wanted do we stop
-        at the first gap (read whatever came back).
+        is not the end of a slow reply. Only when neither `want` nor `stop` is
+        given do we stop at the first gap (read whatever came back).
         """
         acc = ""
         old = self.serial_port.timeout
@@ -223,32 +234,202 @@ class NetworkManagementMixin:
                     acc += chunk.decode("ascii", errors="replace")
                     if want and want in acc:
                         break
-                elif acc and not want:
-                    # Got data and weren't waiting for a specific token — done.
+                    if stop and stop(acc):
+                        break
+                elif acc and not want and not stop:
+                    # Got data and weren't waiting for anything specific — done.
                     break
                 # else: gap (or a 'busy' still in progress) while waiting for
-                # `want` — keep polling the rest of the window.
+                # `want`/`stop` — keep polling the rest of the window.
         finally:
             self.serial_port.timeout = old
         return acc
 
+    # A complete, delimited dotted quad. The lookbehind/lookahead require a
+    # non-digit boundary on both sides so a mid-arrival fragment (e.g. the
+    # '192.168.0.4' of an incoming '192.168.0.40') can't be mistaken for a whole
+    # address — we wait for the trailing delimiter before accepting it.
+    _IP_STOP_RE = re.compile(r"(?<![\d.])\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?=[\s:,])")
+
+    def _net_reply_has_ip(self, text):
+        """Stop condition for a 'get ip a' read: True once the reply carries the
+        address. Accepts an 'IP=' marker (firmware that prefixes it) OR a bare,
+        complete, routable dotted quad — WiFly 4.75 answers with just
+        '192.168.0.40', no 'IP='. Without this the read waits out the whole
+        window for an 'IP=' token that never comes."""
+        if "IP=" in text:
+            return True
+        return any(ip != "0.0.0.0" for ip in self._IP_STOP_RE.findall(text or ""))
+
     @staticmethod
     def _net_extract_ip(text):
-        m = re.search(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", text or "")
-        return m.group(1) if m else ""
+        # Return the first *routable* address. A booted-but-unjoined module
+        # reports 0.0.0.0 on interfaces that aren't up (e.g. the station
+        # interface before it joins a home network); those are not real
+        # addresses, so skip them and only fall back to 0.0.0.0 if nothing
+        # else is present.
+        ips = re.findall(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", text or "")
+        for ip in ips:
+            if ip != "0.0.0.0":
+                return ip
+        return ips[0] if ips else ""
+
+    def _net_apply_known_ip(self, ip):
+        """Remember the module's last-known IP and surface it in both places:
+        the Network tab's read-only display, and the Configurator tab's WiFi IP
+        field — so a later 'Connect via WiFi' is pre-filled with the address we
+        just read or assigned. Called from every get/set path that yields a
+        real address."""
+        if not ip:
+            return
+        self._net_last_ip = ip
+        self.net_ip_edit.setText(ip)
+        field = getattr(self, "ip_edit", None)   # Configurator-tab WiFi field
+        if field is not None:
+            field.setText(ip)
 
     def _net_report_ip(self, module, resp):
         ip = self._net_extract_ip(resp)
         if ip:
-            self.net_ip_edit.setText(ip)
+            self._net_apply_known_ip(ip)
             self._net_log(f"Current {module} WiFi address: {ip}")
         else:
             raw = (resp or "").replace("\r", " ").replace("\n", " ").strip()
             self._net_log(f"Could not read {module} WiFi address. Raw: {raw}")
 
+    @staticmethod
+    def _net_ip_after(text, marker):
+        """First dotted quad appearing after `marker` (e.g. 'STAIP,' / 'APIP,') —
+        used to separate the station and AP addresses in an ESP8266 CIFSR reply
+        that lists both. Returns '' if the marker or an address isn't found."""
+        if not text:
+            return ""
+        i = text.find(marker)
+        if i < 0:
+            return ""
+        m = re.search(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", text[i + len(marker):])
+        return m.group(0) if m else ""
+
+    def _net_report_ips(self, module, sta_ip, ap_ip):
+        """Show BOTH addresses when an ESP module has both: the home-network
+        (station) address and the access-point (192.168.47.1) address. The
+        station stays 0.0.0.0/blank until the module joins a home network, so on
+        a freshly-booted module only the AP shows. Prefills the Configurator WiFi
+        field with the connectable address — home when joined, otherwise the AP."""
+        sta_ok = bool(sta_ip) and sta_ip != "0.0.0.0"
+        ap_ok = bool(ap_ip) and ap_ip != "0.0.0.0"
+        if sta_ok and ap_ok:
+            self._net_log(f"{module} WiFi addresses — Home network: {sta_ip}   |   "
+                          f"Access point: {ap_ip}")
+            self.net_ip_edit.setText(f"{sta_ip} (home)  /  {ap_ip} (AP)")
+        elif sta_ok:
+            self._net_log(f"{module} home-network WiFi address: {sta_ip}")
+            self.net_ip_edit.setText(sta_ip)
+        elif ap_ok:
+            self._net_log(f"{module} access-point address: {ap_ip}  "
+                          f"(not joined to a home network)")
+            self.net_ip_edit.setText(ap_ip)
+        else:
+            self._net_log(f"Could not read {module} WiFi address "
+                          f"(station={sta_ip or '?'}, AP={ap_ip or '?'}).")
+            return
+        # Connectable address for the Configurator WiFi field: home if joined.
+        primary = sta_ip if sta_ok else ap_ip
+        self._net_last_ip = primary
+        field = getattr(self, "ip_edit", None)   # Configurator-tab WiFi field
+        if field is not None:
+            field.setText(primary)
+
+    def _net_wait(self, seconds, label):
+        """Responsive wait (keeps the GUI alive) with start/done log notes."""
+        from PyQt6.QtWidgets import QApplication
+        self._net_log(f"{label} — waiting {seconds}s...")
+        end = time.time() + seconds
+        while time.time() < end:
+            QApplication.processEvents()
+            time.sleep(0.05)
+        self._net_log(f"{label} — done.")
+
+    def _module_is_rn131(self):
+        """True when the WiFi module is (or is selected as) an RN131. Fast
+        Server / Envision does not exist on RN131, so every ESGe!/ESSe* probe
+        must be skipped for it.
+
+        A module type DETECTED by Get Configuration (self._wifi_type) is
+        authoritative and wins over the Network-tab dropdown: otherwise a stale
+        'RN131' selection would wrongly report 'Fast Server not supported' on an
+        ESP module that Get Config just identified as ESP32/8266. Only when
+        nothing has been detected yet do we fall back to the dropdown."""
+        wt = getattr(self, "_wifi_type", None)
+        if wt in ("RN131", "8266", "ESP32"):
+            return wt == "RN131"
+        combo = getattr(self, "net_module_combo", None)
+        return combo is not None and combo.currentText() == "RN131"
+
+    def _rn131_wlan_value(self, value):
+        """Encode an SSID or passphrase for a WiFly 'set wlan ...' command.
+
+        WiFly tokenises the command line on spaces, so 'set wlan pass a b c'
+        stores only 'a' — the module then fails authentication (AUTH-ERR) and
+        loops trying to join. WiFly's convention is to send each space as '$',
+        which it converts back to a real space when it stores the value. The
+        saved credential keeps the real spaces; only the on-wire value is
+        encoded. A literal '$' can't be represented (WiFly would read it as a
+        space), so the caller warns about that separately."""
+        return value.replace(" ", "$")
+
+    def _envision_suspend_for_at(self, wait_s=5):
+        """Envision (Fast Server) mode takes over the AT command processor, so
+        WiFi-address / home-network operations fail while it is running. Query
+        ESGe!; if the 'currently on' bit is set (value >= 4), send ESSe0! to
+        stop it and wait `wait_s` for the module. Returns True if Envision was
+        active (caller MUST restore with _envision_restore_after_at)."""
+        if self._module_is_rn131():
+            return False  # RN131 has no Fast Server/Envision — never probe ESGe!
+        if not self.serial_port or not self.serial_port.is_open:
+            return False
+        try:
+            reply = self._raw_serial_query(self.serial_port, "ESGe!", timeout=3.0)
+        except Exception as e:  # noqa: BLE001
+            self._net_log(f"Envision pre-check skipped: {e}")
+            return False
+        self._net_log(f"Envision check — ESGe! -> {reply or '(no reply)'}")
+        state = self._parse_esge(reply)
+        if state is None or state < 4:
+            return False
+        self._net_log("Envision (Fast Server) is ACTIVE — stopping it (ESSe0!) so the "
+                      "AT command processor is free.")
+        try:
+            self._raw_serial_command(self.serial_port, "ESSe0!")
+        except Exception as e:  # noqa: BLE001
+            self._net_log(f"Could not send ESSe0!: {e}")
+            return False
+        self._net_wait(wait_s, "WiFi module rebooting")
+        try:
+            self.serial_port.reset_input_buffer()
+        except Exception:  # noqa: BLE001
+            pass
+        return True
+
+    def _envision_restore_after_at(self, was_active):
+        """Re-enable Envision (Fast Server) with ESSe1! if it was active before
+        we suspended it for the AT operation."""
+        if not was_active:
+            return
+        if not self.serial_port or not self.serial_port.is_open:
+            self._net_log("NOTE: Envision not restored (serial not open); it returns "
+                          "on the next PMC-Eight reboot.")
+            return
+        try:
+            self._raw_serial_command(self.serial_port, "ESSe1!")
+            self._net_log("Restored Envision (Fast Server) to active (ESSe1!).")
+        except Exception as e:  # noqa: BLE001
+            self._net_log(f"Could not restore Envision (ESSe1!): {e}")
+
     def get_wifi_address(self):
         if not self._net_require_serial():
             return
+        was_active = self._envision_suspend_for_at(5)
         module = self.net_module_combo.currentText()
         try:
             self.serial_port.reset_input_buffer()
@@ -264,9 +445,18 @@ class NetworkManagementMixin:
                 self._net_log("Exited passthrough mode (###).")
             except Exception:  # noqa: BLE001
                 pass
+            self._envision_restore_after_at(was_active)
 
     def _net_read_esp_ip(self, module):
-        self._net_settle = 0.6 if module == "ESP32" else 0.35
+        # Same settle for BOTH ESP families. The ESP8266 used to get 0.35 s, sized
+        # for its old stock AT 1.x firmware. A module serial-flashed to the
+        # esp-at 2.2.x bridge (2.2.40-env and later) runs the same AT core family
+        # as the ESP32, and 0.35 s proved too short there: right after an
+        # Envision exit (ESSe0! -> ~BOOT! -> module reboot), the ESP8266 setting
+        # got "no AT OK" while the ESP32 setting (0.6 s) read both addresses,
+        # from the same module (2026-10-07). The settle also sets the gap
+        # between ESPw42! and the first AT@.
+        self._net_settle = 0.6
         self._net_log(f"Reading current {module} WiFi address...")
         self._net_write("ESPw42!")                      # enter AT passthrough
         time.sleep(0.2)
@@ -281,29 +471,148 @@ class NetworkManagementMixin:
         if not found:
             self._net_log("WARNING: no AT OK - check module selection / connection.")
 
-        ip_cmd = "AT+CIFSR@" if module == "ESP8266" else "AT+CIPSTA?@"
         # Wait for the actual address line, not just the first burst: a slow
-        # ESP32 may echo the command, pause, then send the +CIPSTA/+CIFSR reply.
-        # The marker is subnet-independent (unlike matching "192"); if it never
+        # ESP32 may echo the command, pause, then send the reply. The markers
+        # below are subnet-independent (unlike matching "192"); if one never
         # arrives, _net_read still polls the full window and the regex extracts
         # whatever address is present.
-        ip_token = "+CIFSR" if module == "ESP8266" else "+CIPSTA"
-        self._net_write(ip_cmd)
-        resp = self._net_read(want=ip_token, tries=12, per_read=0.4)
-        self._net_report_ip(module, resp)
+        if module == "ESP8266":
+            # AT+CIFSR lists BOTH the SoftAP IP (APIP) and the station IP (STAIP)
+            # in one reply. On a freshly-booted PMC-Eight the module is in AP mode
+            # at 192.168.47.1 and STAIP is 0.0.0.0; after joining a home network
+            # STAIP holds the DHCP address. Split them by marker so we show both.
+            self._net_write("AT+CIFSR@")
+            resp = self._net_read(want="+CIFSR", tries=12, per_read=0.4)
+            sta_ip = self._net_ip_after(resp, "STAIP,")
+            ap_ip = self._net_ip_after(resp, "APIP,")
+        else:
+            # ESP32: the station interface (CIPSTA?, the home-network address,
+            # 0.0.0.0 until joined) and the SoftAP interface (CIPAP?, the
+            # 192.168.47.1 access point) are two separate queries. Read both and
+            # report both; _net_extract_ip pulls the address out of each reply.
+            self._net_write("AT+CIPSTA?@")
+            sta_resp = self._net_read(want="+CIPSTA", tries=12, per_read=0.4)
+            self._net_write("AT+CIPAP?@")
+            ap_resp = self._net_read(want="+CIPAP", tries=12, per_read=0.4)
+            sta_ip = self._net_extract_ip(sta_resp)
+            ap_ip = self._net_extract_ip(ap_resp)
+        self._net_report_ips(module, sta_ip, ap_ip)
+
+    def _net_discard_buffers(self):
+        """Drop anything queued in both directions (the VB tool's DiscardIn/Out
+        before each RN131 step) so a reply can't be read as the previous one."""
+        for reset in (self.serial_port.reset_output_buffer,
+                      self.serial_port.reset_input_buffer):
+            try:
+                reset()
+            except Exception:  # noqa: BLE001 - buffer resets are best-effort
+                pass
+
+    def _net_rn131_escape(self, wait_s):
+        """Send the bare '$$$' WiFly escape and return the reply.
+
+        '$$$' takes NO '@' terminator — it is not a passthrough AT line, it is
+        the module's own escape sequence — and WiFly wants a quiet guard time
+        either side of it, so nothing is appended and nothing follows until the
+        wait elapses."""
+        self._net_write("$$$", settle=0)
+        time.sleep(wait_s)
+        return self._net_read(want="CMD", tries=4, per_read=0.3)
+
+    def _net_rn131_command_mode(self, passthrough=True, wait_s=2.0):
+        """Put the RN131 into command mode; return True once it answers 'CMD'.
+
+        Two steps, and the second is the one that was missing: ESPw42 opens the
+        PMC-Eight passthrough (no '!' — unlike the ESP modules), then a separate
+        bare '$$$' escapes the module itself into command mode. Without the
+        '$$$' the module stays in data mode and silently forwards 'get ip a@' to
+        the TCP link instead of answering it.
+
+        `wait_s` mirrors the VB GET IP routine's 2 s pause after '$$$' (its v1.1
+        notes tie the GET IP fix to this step); the config routine used 300 ms.
+        A longer guard time is never harmful, only slower.
+
+        Pass passthrough=False after a module reboot: the reboot drops the
+        module's command mode but NOT the PMC-Eight passthrough, which is a
+        Propeller state — so only the '$$$' needs re-sending."""
+        if passthrough:
+            self._net_write("ESPw42")                   # RN131 enter (no '!')
+            time.sleep(0.2)
+            self._net_read(tries=2)                     # drain the banner
+        self._net_discard_buffers()
+        reply = self._net_rn131_escape(wait_s)
+        if "Auto-" in reply:
+            # Module was mid-association and answered with its Auto-Assoc notice
+            # instead of taking the escape. The VB tool re-sends once here.
+            self._net_log("RN131 is still associating — re-sending $$$...")
+            reply = self._net_rn131_escape(wait_s)
+        if "CMD" in reply:
+            self._net_log("RN131 in command mode (CMD).")
+            return True
+        if "AUTH-ERR" in reply or "Disconn" in reply:
+            # The module is looping on a failed join (usually a wrong/truncated
+            # passphrase saved earlier). The constant status spam violates the
+            # quiet guard time the '$$$' escape needs, so command mode can't be
+            # entered until the join storm stops.
+            self._net_log("RN131 is failing to authenticate to the saved network "
+                          "(AUTH-ERR) and is stuck retrying, which blocks command "
+                          "mode. Click 'Restore to Default' first, then 'Configure "
+                          "for Home Network' again with the correct password. If it "
+                          "still fails with the right password, note the RN131 is "
+                          "2.4GHz WPA/WPA2 only — it cannot join a WPA3-only network "
+                          "or one that requires protected management frames (PMF). "
+                          "A 2.4GHz WPA2 SSID (like a guest/IoT network) is safest.")
+            return False
+        self._net_log("Failed to enter RN131 command mode — check the module type. "
+                      f"Reply: {reply.strip() or '(no reply)'}")
+        return False
+
+    def _net_rn131_exit_command_mode(self):
+        """Return the RN131 to data mode. MUST run once command mode is entered:
+        '###' only closes the PMC-Eight passthrough, so a module left in command
+        mode keeps its data link dead until it reboots."""
+        try:
+            self._net_write("exit@")
+            time.sleep(0.1)
+            self._net_log("Left RN131 command mode (exit).")
+        except Exception as e:  # noqa: BLE001 - never mask the original error
+            self._net_log(f"WARNING: could not leave RN131 command mode: {e}")
+
+    def _net_rn131_get_ip(self):
+        """Query the module's address (requires command mode). The RN131 echoes
+        the command before answering; _net_read accumulates the whole window and
+        _net_extract_ip picks the address out, so the echo is harmless — it
+        carries no digits.
+
+        The read stops as soon as the address is in hand (via _net_reply_has_ip),
+        whether the firmware prefixes it with 'IP=' or returns the bare address
+        as WiFly 4.75 does — so a bare-address reply no longer waits out the full
+        window for an 'IP=' that never arrives.
+
+        A '?-' reply means the module lost the command's first character. The VB
+        tool retries by re-sending it split after the 'g', which is mirrored
+        here rather than tidied away — it reads like a real field workaround."""
+        self._net_discard_buffers()
+        self._net_write("get ip a@")
+        resp = self._net_read(stop=self._net_reply_has_ip, tries=12, per_read=0.4)
+        if "?-" in resp:
+            self._net_log("RN131 garbled the command (?-) — retrying...")
+            self._net_write("g")
+            self._net_discard_buffers()
+            self._net_write("et ip a@")
+            resp = self._net_read(stop=self._net_reply_has_ip, tries=12, per_read=0.4)
+        return resp
 
     def _net_read_rn131_ip(self):
         self._net_settle = 0.3
         module = "RN131"
         self._net_log("Reading current RN131 WiFi address...")
-        self._net_write("ESPw42")                       # RN131 enter (no '!')
-        time.sleep(0.2)
-        self.serial_port.reset_input_buffer()
-        self._net_write("get ip a@")
-        # Same idea: keep polling across gaps for the IP= line; falls through to
-        # the full window if the marker never appears, then the regex extracts.
-        resp = self._net_read(want="IP=", tries=12, per_read=0.4)
-        self._net_report_ip(module, resp)
+        if not self._net_rn131_command_mode():
+            return
+        try:
+            self._net_report_ip(module, self._net_rn131_get_ip())
+        finally:
+            self._net_rn131_exit_command_mode()
 
     # ── forward: configure for home network ──────────────────────────
     def configure_home_network(self):
@@ -316,6 +625,7 @@ class NetworkManagementMixin:
             self._net_log("ERROR: enter the home WiFi SSID.")
             return
         self._net_save_credentials()
+        was_active = self._envision_suspend_for_at(5)
         try:
             self.serial_port.reset_input_buffer()
             if module in ("ESP32", "ESP8266"):
@@ -333,12 +643,13 @@ class NetworkManagementMixin:
                 self._net_log("Exited passthrough mode (###).")
             except Exception:  # noqa: BLE001
                 pass
+            self._envision_restore_after_at(was_active)
 
     def _net_configure_esp(self, module, ssid, pwd):
-        # Settle delay after each command before reading the reply. The ESP32 is
-        # slower to turn a command around than the ESP8266, so give it more time;
-        # both have headroom to go slower, which avoids the 'busy p...' notice.
-        self._net_settle = 0.6 if module == "ESP32" else 0.35
+        # Settle delay after each command before reading the reply; headroom here
+        # avoids the 'busy p...' notice. Same 0.6 s for both ESP families -- see
+        # _net_read_esp_ip for why the ESP8266 no longer gets a shorter one.
+        self._net_settle = 0.6
         self._net_log(f"Configuring {module} for home network '{ssid}'...")
         self._net_write("ESPw42!")                      # enter AT passthrough
         time.sleep(0.2)
@@ -368,7 +679,7 @@ class NetworkManagementMixin:
         resp = self._net_read(want="192", tries=12, per_read=0.4)
         ip = self._net_extract_ip(resp)
         if ip:
-            self.net_ip_edit.setText(ip)
+            self._net_apply_known_ip(ip)
             self._net_log(f"Assigned IP: {ip}")
         else:
             self._net_log("Could not read assigned IP. Raw: "
@@ -377,39 +688,66 @@ class NetworkManagementMixin:
     def _net_configure_rn131(self, ssid, pwd):
         self._net_settle = 0.3                          # RN131 settle per command
         self._net_log(f"Configuring RN131 for home network '{ssid}'...")
-        self._net_write("ESPw42")                       # RN131 enter (no '!')
-        time.sleep(0.2)
-        self.serial_port.reset_input_buffer()
-        for cmd in (
-            f"set wlan ssid {ssid}@",
-            f"set wlan pass {pwd}@",
-            "set wlan join 1@",
-            "set wlan chan 0@",
-            "set ip dhcp 1@",
-            "set ip host 0.0.0.0@",
-            "set comm remote 1@",
-            "set ip remote 0@",
-            "save@",
-        ):
-            self._net_write(cmd)
-            self._net_read(tries=4)
-            self._net_log(cmd)
-            time.sleep(0.1)
-        self._net_write("reboot@")
-        self._net_log("reboot — RN131 joining home network (waiting ~8 s)...")
-        time.sleep(8)
 
-        self._net_write("ESPw42")                       # re-enter to read IP
-        time.sleep(0.2)
-        self.serial_port.reset_input_buffer()
-        self._net_write("get ip a@")
-        resp = self._net_read(want="192", tries=12, per_read=0.4)
-        ip = self._net_extract_ip(resp)
-        if ip:
-            self.net_ip_edit.setText(ip)
-            self._net_log(f"Assigned IP: {ip}")
-        else:
-            self._net_log("Could not read RN131 IP. Raw: " + resp.strip())
+        # WiFly splits 'set wlan ...' on spaces, so encode spaces as '$'. Without
+        # this a space in the SSID or password is truncated at the first space
+        # and the module fails to authenticate (AUTH-ERR).
+        if " " in ssid or " " in pwd:
+            self._net_log("Note: encoding space(s) in the SSID/password as '$' "
+                          "for the RN131 (WiFly space convention).")
+        if "$" in ssid or "$" in pwd:
+            self._net_log("WARNING: a literal '$' in the SSID or password can't be "
+                          "sent to an RN131 (WiFly reads '$' as a space). If the "
+                          "join fails, the RN131 can't use this password.")
+        ssid_enc = self._rn131_wlan_value(ssid)
+        pwd_enc = self._rn131_wlan_value(pwd)
+
+        if not self._net_rn131_command_mode():
+            return
+        in_command_mode = True
+        try:
+            for cmd in (
+                f"set wlan ssid {ssid_enc}@",
+                f"set wlan pass {pwd_enc}@",
+                "set wlan join 1@",
+                "set wlan chan 0@",
+                "set ip dhcp 1@",
+                "set ip host 0.0.0.0@",
+                "set comm remote 1@",
+                "set ip remote 0@",
+                "save@",
+            ):
+                self._net_write(cmd)
+                self._net_read(tries=4)
+                self._net_log(cmd)
+                time.sleep(0.1)
+
+            # The reboot drops command mode (and the module comes back in data
+            # mode), so there is nothing to exit until we re-enter below.
+            self._net_write("reboot@")
+            in_command_mode = False
+            self._net_wait(8, "RN131 rebooting and joining home network")
+
+            # Re-enter command mode to read the assigned address. The passthrough
+            # survives the module reboot, so only the '$$$' is re-sent — and the
+            # module may still be associating, which _net_rn131_command_mode
+            # retries past.
+            if not self._net_rn131_command_mode(passthrough=False):
+                self._net_log("Could not re-enter command mode to read the IP — "
+                              "the module may still be joining. Use Get WiFi "
+                              "Address in a moment to read it.")
+                return
+            in_command_mode = True
+            resp = self._net_rn131_get_ip()
+            ip = self._net_extract_ip(resp)
+            if ip:
+                self._net_apply_known_ip(ip)
+                self._net_log(f"Assigned IP: {ip}")
+            else:
+                self._net_log("Could not read RN131 IP. Raw: " + resp.strip())
+        finally:
+            if in_command_mode:
+                self._net_rn131_exit_command_mode()
 
     # ── reverse: restore to default ──────────────────────────────────
     def restore_network_default(self):

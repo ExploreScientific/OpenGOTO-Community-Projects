@@ -1,15 +1,3 @@
-# PMC8 Dashboard Source
+# PMC8 Dashboard source
 
-The Dashboard source is organized by platform to preserve the exact behavior of the current release packages.
-
-## Windows
-
-`source/windows/` contains the Windows Dashboard Python source, `network_management.py`, and `p1_loader.py`, a pure-Python Propeller firmware loader used by the Windows upload workflow.
-
-## macOS
-
-`source/macos/` contains the macOS Dashboard Python source, `network_management.py`, `p1_loader.py`, and the bundled `p1load_package` helper used by the macOS upload workflow.
-
-## Maintenance Guidance
-
-When Wes publishes a Dashboard update, compare both platform release packages and refresh the matching platform source directory. If the platform packages are unified upstream later, this directory can be simplified.
+The windows, macos and linux directories contain the corresponding upstream v0.2.7 release payloads, copied without source modifications on 2026-11-20. Historical macOS helper paths are retained for compatibility.

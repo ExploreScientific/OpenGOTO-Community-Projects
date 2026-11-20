@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PMC8 Dashboard v0.2.0 User Manual</title>
+  <title>PMC8 Dashboard v0.2.7 User Manual</title>
   <style>
     :root { --ink:#172033; --head:#0f2742; --line:#d6dde8; --soft:#f3f5f8; }
     * { box-sizing: border-box; }
@@ -40,7 +40,7 @@
 </head>
 <body>
 <h1>PMC8 Dashboard</h1>
-<p class="lede">A friendly desktop app for setting up, testing, and updating your Explore Scientific PMC&#8209;Eight mount controller &mdash; on Windows, macOS, or Linux. <em>Version 0.2.0.</em></p>
+<p class="lede">A friendly desktop app for setting up, testing, and updating your Explore Scientific PMC&#8209;Eight mount controller &mdash; on Windows, macOS, or Linux. <em>Version 0.2.7.</em></p>
 
 <div class="box note">
   <span class="label">New to the dashboard?</span>
@@ -101,24 +101,58 @@ py PMC8_Dashboard.py</pre>
 
 <h3>macOS</h3>
 <ol>
-  <li>Extract <code>PMC8_Dashboard_macOS.zip</code>.</li>
-  <li>Open the extracted <code>PMC8_Dashboard_macOS</code> folder.</li>
-  <li>Double&#8209;click <code>setup_macos.command</code>. It clears macOS "quarantine" where it can, sets file permissions, checks that all needed files are present, installs the Python packages, and starts the app.</li>
+  <li>Extract <code>PMC8_Dashboard_macOS.zip</code> and open the extracted <code>PMC8_Dashboard_macOS</code> folder.</li>
+  <li><strong>First launch &mdash; run setup through Terminal (recommended).</strong> macOS normally blocks a freshly downloaded script on a plain double&#8209;click, so run it through the <code>sh</code> program the first time, which avoids that:
+    <ol type="a">
+      <li>Open <strong>Terminal</strong> (press <span class="kbd">&#8984;</span>&#8209;<span class="kbd">Space</span>, type <code>Terminal</code>, press Return).</li>
+      <li>Type <code>sh</code> followed by a space &mdash; but <strong>don't</strong> press Return yet.</li>
+      <li><strong>Drag</strong> the <code>setup_macos.command</code> file from Finder into the Terminal window (this fills in its location for you). The line should read <code>sh /&hellip;/setup_macos.command</code>.</li>
+      <li>Press <strong>Return</strong>.</li>
+    </ol>
+    Setup clears macOS's download protection ("quarantine") on the whole folder, sets permissions, installs the Python packages, and starts the app.</li>
 </ol>
-<p>After that first successful setup, just double&#8209;click <code>run_PMC8-Dashboard.command</code> any time you want to launch the dashboard.</p>
+<p>After that first successful setup, just double&#8209;click <code>run_PMC8-Dashboard.command</code> any time you want to launch the dashboard &mdash; the download protection is already cleared, so it opens normally.</p>
 <div class="box note">
-  <span class="label">If a .command file won't open</span>
-  If double&#8209;clicking opens a text editor or does nothing, the file doesn't have its "executable" bit yet. Open Terminal in the extracted folder and run <code>sh setup_macos.command</code>. To make the files clickable afterward: <code>chmod +x setup_macos.command run_PMC8-Dashboard.command</code>.
+  <span class="label">Why not just double-click the first time?</span>
+  You can try double&#8209;clicking <code>setup_macos.command</code>, but on a fresh download macOS usually blocks it &mdash; you might see <em>"insufficient privileges,"</em> <em>"unidentified developer,"</em> or <em>"Apple could not verify&hellip;."</em> <strong>Running <code>chmod</code> does not fix this</strong> (it's a separate security tag called <em>quarantine</em>). The Terminal <code>sh</code> method above sidesteps it &mdash; that's why it's the recommended first step.
 </div>
 <div class="box warn">
   <span class="label">macOS may block the firmware helper once</span>
   The first time you upload firmware, macOS may block the bundled <code>p1load</code> helper. Go to <strong>System Settings &rarr; Privacy &amp; Security</strong>, find the blocked&nbsp;<code>p1load</code> message, click <strong>Allow Anyway</strong>, then run the upload again and approve the popup. This is a one&#8209;time approval.
 </div>
 
-<h3>Linux / running from source</h3>
+<h3>Linux / Raspberry Pi (64-bit)</h3>
+<p>The dashboard is pure Python and runs on Linux, including a <strong>64&#8209;bit Raspberry Pi</strong> (Raspberry Pi OS 64&#8209;bit / <code>aarch64</code>). There is <strong>no separate compiled build</strong> to download for the Pi &mdash; the same source runs everywhere, and firmware upload on Linux uses the built&#8209;in Python uploader (the macOS&#8209;only <code>p1load</code> helper is not used here).</p>
+<p><strong>Packaged ZIP (recommended).</strong> Extract <code>PMC8_Dashboard_Linux.zip</code>, open the extracted folder in a terminal, and run the one&#8209;time setup:</p>
+<pre>./setup_linux.sh</pre>
+<p>Setup installs PyQt6 + pyserial (via <code>apt</code> on Raspberry Pi OS, otherwise pip), adds you to the <code>dialout</code> group for serial&#8209;port access, then launches the dashboard. After setup succeeds once, the normal day&#8209;to&#8209;day launcher is:</p>
+<pre>./run_dashboard_linux.sh</pre>
+<div class="box note">
+  <span class="label">Log out and back in before connecting (first time)</span>
+  <code>setup_linux.sh</code> adds you to the <code>dialout</code> group so you can open the serial port, but that group change only takes effect after a fresh login. If the dashboard opens but the serial port won't connect, log out and back in (or reboot the Pi) once &mdash; it works from then on.
+</div>
+<div class="box note">
+  <span class="label">On Linux, connecting over serial reboots the mount &mdash; this is normal</span>
+  Opening the serial port on Linux briefly toggles the reset line, so the PMC&#8209;Eight restarts every time you press <strong>Connect</strong>. The dashboard expects this: it shows &ldquo;Mount reboots on serial connect (Linux) &mdash; waiting for it to come back&hellip;&rdquo;, waits ~20&nbsp;seconds for the mount to restart, then fills in the configuration automatically. Let it finish &mdash; it is not an error. (Windows and macOS do not reset the mount on connect.)
+</div>
+<p>If a <code>.sh</code> file isn't executable (for example the folder was copied instead of extracted), make them clickable first with <code>chmod +x setup_linux.sh run_dashboard_linux.sh</code>.</p>
+<p><strong>Source / manual run.</strong> On a Raspberry Pi, the easiest install uses the system packages (this avoids building Qt from source):</p>
+<pre>sudo apt install python3-pyqt6 python3-serial
+cd /path/to/p1loader
+python3 PMC8_Dashboard.py</pre>
+<p>On other Linux systems, or in a virtual environment:</p>
 <pre>python3 -m pip install PyQt6 pyserial
 cd /path/to/p1loader
 python3 PMC8_Dashboard.py</pre>
+
+<div class="box note">
+  <span class="label">Use a 64-bit OS on the Pi</span>
+  PyQt6 is available for 64&#8209;bit ARM (<code>aarch64</code>) only, so run 64&#8209;bit Raspberry Pi OS. On the Pi, prefer <code>apt install python3-pyqt6</code> over <code>pip install PyQt6</code> &mdash; plain pip may not have a matching wheel and can try to compile Qt.
+</div>
+<div class="box note">
+  <span class="label">Serial port &amp; permissions</span>
+  On the Pi the mount usually appears as <code>/dev/ttyUSB0</code> (FTDI/CP210x/CH340 adapters) or <code>/dev/ttyACM0</code>. Add your user to the <code>dialout</code> group once so you can open the port without root, then log out and back in: <code>sudo usermod -aG dialout $USER</code>. It's a desktop app, so run it on the Pi desktop or over VNC/X, not from a headless SSH session.
+</div>
 
 <div class="box note">
   <span class="label">Startup check</span>
@@ -168,6 +202,12 @@ python3 PMC8_Dashboard.py</pre>
 <div class="box tip">
   <span class="label">Joining can take several seconds</span>
   After "Joining home network&hellip;" appears, give it time &mdash; connecting to a router and getting an address isn't instant. The log will say <strong>Joined home network</strong> when it sees the address. If it warns it didn't see an address, see <a href="#trouble">Troubleshooting</a>.
+</div>
+<div class="box note">
+  <span class="label">RN131 modules and modern routers</span>
+  RN131 modules (common on EXOS2 mounts) are older 2.4&nbsp;GHz radios that speak <strong>WPA and WPA2 only</strong>. They cannot join a network that is WPA3-only, that runs WPA2/WPA3 &ldquo;transition&rdquo; mode, or that requires Protected Management Frames (PMF / 802.11w) &mdash; all common on newer WiFi&nbsp;6 routers. When an RN131 can see such a network but can't complete the login, the log shows an authentication error (<code>AUTH-ERR</code>) and the module keeps retrying. If that happens, point the mount at a <strong>2.4&nbsp;GHz WPA2</strong> network &mdash; a guest or IoT SSID is ideal &mdash; rather than your main modern network. The ESP32 and ESP8266 modules are newer and less fussy about this.
+  <br><br>
+  <strong>Passwords with spaces are fine</strong> &mdash; the app now encodes them correctly for the RN131. (Earlier versions truncated an RN131 password at the first space, which also showed up as <code>AUTH-ERR</code>, so update if you saw that before.)
 </div>
 
 <h3 id="task-ip">5.2 Find my mount's WiFi address</h3>
@@ -235,18 +275,39 @@ python3 PMC8_Dashboard.py</pre>
   <li><strong>Get Configuration</strong> &mdash; reads the controller's settings into editable fields.</li>
   <li><strong>Save Configuration</strong> &mdash; sends the displayed values back to the controller.</li>
   <li><strong>Boot PMC8</strong> &mdash; restarts the controller after configuration or firmware operations.</li>
+  <li><strong>Fast Server Status</strong> &mdash; whether Fast Server (Envision) is installed on your WiFi module, and whether it is running right now. Filled in by <strong>Get Configuration</strong>.</li>
+  <li><strong>Boot into Fast Server</strong> &mdash; tick to have the WiFi module start in Fast Server mode from now on, untick to have it start normally, then click <strong>Save Configuration</strong> to apply the change. The box is greyed out when the option isn't available, and the status line says why.</li>
 </ul>
+<div class="box note">
+  <span class="label">Fast Server needs an ESP32 or ESP8266 on current firmware</span>
+  Fast Server mode is only available on <strong>ESP32</strong> and <strong>ESP8266</strong> WiFi modules, and only once the module has been updated to the latest firmware build. If your module is on an older build, the status line reads &ldquo;Not installed&rdquo; and the checkbox stays greyed out &mdash; update the module's firmware and click <strong>Get Configuration</strong> again.
+  <br><br>
+  <strong>RN131 modules do not support Fast Server mode at all.</strong> There is no firmware update that adds it; the status line says it isn't available and the checkbox stays greyed out.
+</div>
 
 <h3>Command Console</h3>
 <p>For testing and advanced use: pick a PMC&#8209;Eight command from the list, fill in any parameter fields it needs, and click send. The reply appears in the response log.</p>
+
+<p>Below the list there's an <strong>&ldquo;Or type a command:&rdquo;</strong> box for anything the list doesn't carry &mdash; type the command exactly as you want it sent (for example <code>ESGe!</code>) and press Enter or click send. While that box has any text in it, it is what gets sent and the list selection is ignored, so clear it (the <strong>&times;</strong> at its right edge) when you want to go back to picking from the list.</p>
+
+<p>Two Envision (Fast Server) commands are on the list:</p>
+<table>
+  <tr><th>Command</th><th>What it does</th></tr>
+  <tr><td><code>ESGe!</code></td><td>Get Envision status. The reply is a 3&#8209;bit value: <strong>1</strong> = the module is Envision&#8209;capable, <strong>2</strong> = the boot flag is set, <strong>4</strong> = Envision is running right now (so 3 = capable and set to boot into it).</td></tr>
+  <tr><td><code>ESSe&lt;p&gt;!</code></td><td>Set Envision. <code>p</code> = <strong>0</strong> stop now, <strong>1</strong> start now, <strong>3</strong> boot on, <strong>4</strong> boot off. Sending this by hand re&#8209;reads <code>ESGe!</code> afterwards so the Fast Server display stays in step. Note that 0 and 1 reboot the WiFi module, so the status may read Unknown for a few seconds &mdash; and over a WiFi connection they will drop the link you are using.</td></tr>
+</table>
 
 <h2 id="trouble">7. Troubleshooting</h2>
 
 <table>
   <tr><th>Symptom</th><th>What to try</th></tr>
   <tr>
+    <td>The Configuration tab is blank after "Get Configuration"</td>
+    <td>An occasional serial read drops or truncates the first reply (the log shows <em>"Unexpected ESGi! response length"</em>). This is harmless &mdash; the app rejects a garbled reply rather than showing wrong values. Just click <strong>Get Configuration</strong> again; the second read almost always succeeds.</td>
+  </tr>
+  <tr>
     <td>My serial port isn't in the list</td>
-    <td>Plug in the USB cable <em>before</em> opening the list, then reopen it (or restart the app). On Windows, a missing port often means the USB&#8209;serial driver (FTDI / CP210x / CH340) isn't installed. To identify the right port, unplug the mount, note which entries disappear, plug it back in, and pick the one that returns.</td>
+    <td>Plug in the USB cable <em>before</em> opening the list, then reopen it (or restart the app). On Windows, a missing port often means the USB&#8209;serial driver (FTDI / CP210x / CH340) isn't installed. On Linux / Raspberry Pi, the mount shows as <code>/dev/ttyUSB0</code> or <code>/dev/ttyACM0</code>; if it's listed but won't open, add yourself to the <code>dialout</code> group (<code>sudo usermod -aG dialout $USER</code>) and log out and back in. To identify the right port, unplug the mount, note which entries disappear, plug it back in, and pick the one that returns.</td>
   </tr>
   <tr>
     <td>Connect button won't turn green</td>
@@ -263,6 +324,10 @@ python3 PMC8_Dashboard.py</pre>
   <tr>
     <td>"Did not see WIFI GOT IP" after Configure</td>
     <td>Double&#8209;check the SSID and password (the password field is case&#8209;sensitive). Make sure the network is in range and is a 2.4&nbsp;GHz network &mdash; many of these modules don't support 5&nbsp;GHz. Then try again.</td>
+  </tr>
+  <tr>
+    <td>RN131 shows "<code>AUTH-ERR</code>" or won't join, and keeps retrying</td>
+    <td>The RN131 reached your network but was refused at login. Two common causes. <strong>Wrong password:</strong> the module gets stuck retrying a failed login, which also blocks the app from re&#8209;entering command mode &mdash; click <strong>Restore to Default</strong> first (this returns it to its own access point and stops the retrying), then <strong>Configure for Home Network</strong> again with the correct password. <strong>A network the RN131 can't use:</strong> RN131 modules are 2.4&nbsp;GHz WPA/WPA2 only and cannot join WPA3&#8209;only, WPA2/WPA3 transition, or PMF&#8209;required networks (common on modern WiFi&nbsp;6 routers) &mdash; if the password is definitely right, join a 2.4&nbsp;GHz WPA2 network instead (a guest or IoT SSID is ideal). Spaces in the password are handled correctly now; an older version could truncate them and cause the same error.</td>
   </tr>
   <tr>
     <td>The mount seems "stuck" after a WiFi step</td>
@@ -297,7 +362,7 @@ python3 PMC8_Dashboard.py</pre>
 <p>See <code>THIRD_PARTY_NOTICES.md</code> in the distribution folder for the full notice text.</p>
 
 <footer>
-  PMC8 Dashboard v0.2.0 &mdash; User Manual. For Explore Scientific PMC&#8209;Eight controllers.
+  PMC8 Dashboard v0.2.7 &mdash; User Manual. For Explore Scientific PMC&#8209;Eight controllers.
 </footer>
 </body>
 </html>

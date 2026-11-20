@@ -1,28 +1,7 @@
-# Source
+# Public source and documentation snapshots
 
-This OpenGOTO entry includes a public source/documentation snapshot from Wes McDonald's upstream `pmc8-tools` repository, imported with contributor permission reported by Explore Scientific on 2026-05-27.
+Selected public branches from [wesmcd6/pmc8-tools](https://github.com/wesmcd6/pmc8-tools) are mirrored under `upstream-branches`. Each tool retains its own license/attribution. Contributor redistribution permission is recorded in the existing project notices.
 
-The upstream repository is organized as a multi-branch tool hub. The Explore Scientific snapshot preserves that structure under:
+Refreshed 2026-11-20: Dashboard source v0.2.7, Envision 2.6.1.0 documentation/license, master overview, Windows instructions, and ESP8266 recovery documentation. Per-branch MIRROR-PROVENANCE.json files record exact source commits. The historical `explorestars-envision` directory remains a compatibility copy of the current `envision` documentation. Small manual resources are included for offline viewing. Current full software packages are hosted as GitHub Release assets.
 
-- `upstream-branches/master/`
-- `upstream-branches/pmc8-dashboard/`
-- `upstream-branches/spiral-search/`
-- `upstream-branches/home-network-config/`
-- `upstream-branches/esp32-ota/`
-- `upstream-branches/esp32-serial-flash/`
-- `upstream-branches/pmc8-firmware/`
-- `upstream-branches/pmc8-ufct/`
-- `upstream-branches/explorestars-envision/`
-- `upstream-branches/explorestars-lite/`
-- `upstream-branches/pwa-server/`
-- `upstream-branches/windows/`
-
-Large release binaries, installers, APKs, firmware payloads, packaged dependencies, images, and PDFs are not copied into git. Branch folders include `SKIPPED-FILES.md` where files were intentionally omitted. Customer-facing downloads are hosted as GitHub Release assets instead.
-
-The upstream public repository remains:
-
-https://github.com/wesmcd6/pmc8-tools
-
-Redistribution and modification terms vary by tool. Preserve the README, LICENSE, and notice files associated with each branch.
-
-ESP32 documentation refresh (2026-10-22): the OTA and serial-flash folders now contain guides copied verbatim from OTA v2.5 and serial flash v1.3 release ZIPs, with mirror download guidance. Other branch snapshots retain their original import dates.
+ESP32 guides and mirror wrappers retain the verified October 22 refresh (OTA v2.5, serial recovery v1.3). Other unchanged branch snapshots retain their original provenance. [Browser tools](../../PMC8-Browser-Tools) are maintained as a separate OpenGOTO project.

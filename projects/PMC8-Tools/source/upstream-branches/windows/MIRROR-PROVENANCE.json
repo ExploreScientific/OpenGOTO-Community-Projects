@@ -1,0 +1,7 @@
+{
+  "upstream": "wesmcd6/pmc8-tools",
+  "branch": "windows",
+  "commit": "63e304371fc651cf9c67ab284b0b037c9edf283c",
+  "date": "2026-11-20",
+  "note": "Markdown repository-relative links resolved to the upstream GitHub repository."
+}

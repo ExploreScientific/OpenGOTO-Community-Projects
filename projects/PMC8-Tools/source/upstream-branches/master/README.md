@@ -1,65 +1,65 @@
-> Historical upstream landing-page snapshot from 2026-08-14. For the current mirrored ESP32 packages (OTA v2.5 / ES4.2.32 and serial flash v1.3 / ES4.2.3), use the [OpenGOTO release index](../../../releases/README.md).
-
 # PMC-Eight&trade; Tools
 
-Downloads for **Explore Scientific&trade; PMC-Eight&trade;** telescope mount users — the **ExploreStars Envision&trade;** mount-control app, ESP32 Wi-Fi firmware tools, and the latest Propeller firmware.
+Downloads for **Explore Scientific&trade; PMC-Eight&trade;** telescope mount users — the **Envision the Heavens&trade;** (Envision) mount-control app, ESP32 Wi-Fi firmware tools, and the latest Propeller firmware.
 
 > 📖 **New here?** Start with [**GETTING_STARTED.txt**](GETTING_STARTED.txt) —
 > a step-by-step guide that walks you through choosing the right tool,
-> updating firmware, and installing ExploreStars Envision in the correct order.
+> updating firmware, and installing Envision in the correct order.
 > First-time users should read this before anything else. Experienced
 > users can jump to its "Quick Reference" section.
 
-## ExploreStars Envision&trade; — current
+## Envision the Heavens&trade; — current
 
-📦 **[Get the v2.5.0.3 release →](../../releases/tag/v2.5.0.3)**
+Envision the Heavens&trade; (Envision for short) was called ExploreStars Envision before 2.5.2.0.
+
+📦 **[Get the v2.6.1.0 release →](https://github.com/wesmcd6/pmc8-tools/releases/tag/v2.6.1.0)**
 
 The Releases page carries pre-built binaries for every platform. Pick the asset that matches your device:
 
 | Asset name | Platform | Notes |
 |---|---|---|
-| `ExploreStars-Envision-vX.Y.Z.W-android.apk` | Android | Sideload — tap to install |
-| `ExploreStars-Envision-vX.Y.Z.W-windows.zip` | Windows | Extract, run `ExplorestarsLite.Maui.exe` |
-| `ExploreStars-Envision-vX.Y.Z.W-pwa-server.zip` | Self-hosted PWA | Run on a Windows/Mac/Linux PC; phones connect via local Wi-Fi |
+| `Envision-vX.Y.Z.W-android.apk` | Android | Sideload — tap to install |
+| `Envision-vX.Y.Z.W-windows.zip` | Windows | Extract somewhere you can write to (not Program Files), open the `Envision` folder, run **Start Envision** |
+| `Envision-vX.Y.Z.W-pwa-server.zip` | Self-hosted PWA | Run on a Windows/Mac/Linux PC or Raspberry Pi; phones connect via local Wi-Fi. Setup guide: `Envision/docs/server-setup-guide.html` in the zip |
 
-For the user manual and attribution doc, see the [`explorestars-envision`](../../tree/explorestars-envision) branch.
+For the user manual and attribution doc, see the [`envision`](https://github.com/wesmcd6/pmc8-tools/tree/envision) branch.
 
 iOS and macOS app-store builds are planned.
 
 
 ## PMC8 Dashboard
 
-**Downloads:** get the latest assets from the [`pmc8-dashboard-v0.2.6`](../../releases/tag/pmc8-dashboard-v0.2.6) release.
+**Downloads:** get the latest assets from the [`pmc8-dashboard-v0.2.7`](https://github.com/wesmcd6/pmc8-tools/releases/tag/pmc8-dashboard-v0.2.7) release.
 
 PMC8 Dashboard is a Python/PyQt6 desktop utility for PMC-Eight configuration, WiFi/home-network setup, command testing, response logging, and firmware upload workflow support.
 
 | Item | Link | Notes |
 |---|---|---|
-| Source and manual | [`pmc8-dashboard`](../../tree/pmc8-dashboard/pmc8-dashboard) | Public source, docs, and third-party notices |
-| Windows ZIP | [`PMC8_Dashboard_Windows.zip`](../../releases/download/pmc8-dashboard-v0.2.6/PMC8_Dashboard_Windows.zip) | Extract and run `run_dashboard_windows.bat` |
-| macOS ZIP | [`PMC8_Dashboard_macOS.zip`](../../releases/download/pmc8-dashboard-v0.2.6/PMC8_Dashboard_macOS.zip) | Extract, double-click `setup_macos.command` (first run), then `run_PMC8-Dashboard.command` |
-| Linux / Raspberry Pi (64-bit) ZIP | [`PMC8_Dashboard_Linux.zip`](../../releases/download/pmc8-dashboard-v0.2.6/PMC8_Dashboard_Linux.zip) | Extract, run `setup_linux.sh` (first run), then `run_dashboard_linux.sh` |
+| Source and manual | [`pmc8-dashboard`](https://github.com/wesmcd6/pmc8-tools/tree/pmc8-dashboard/pmc8-dashboard) | Public source, docs, and third-party notices |
+| Windows ZIP | [`PMC8_Dashboard_Windows.zip`](https://github.com/wesmcd6/pmc8-tools/releases/download/pmc8-dashboard-v0.2.7/PMC8_Dashboard_Windows.zip) | Extract and run `run_dashboard_windows.bat` |
+| macOS ZIP | [`PMC8_Dashboard_macOS.zip`](https://github.com/wesmcd6/pmc8-tools/releases/download/pmc8-dashboard-v0.2.7/PMC8_Dashboard_macOS.zip) | Extract, double-click `setup_macos.command` (first run), then `run_PMC8-Dashboard.command` |
+| Linux / Raspberry Pi (64-bit) ZIP | [`PMC8_Dashboard_Linux.zip`](https://github.com/wesmcd6/pmc8-tools/releases/download/pmc8-dashboard-v0.2.7/PMC8_Dashboard_Linux.zip) | Extract, run `setup_linux.sh` (first run), then `run_dashboard_linux.sh` |
 
 ## Network Configuration
 
-**[Configure PMC8 for Home Network Connection](../../tree/home-network-config)** — a
+**[Configure PMC8 for Home Network Connection](https://github.com/wesmcd6/pmc8-tools/tree/home-network-config)** — a
 Windows utility that puts a PMC-Eight WiFi module (**ESP32 / ESP8266 / RN-131**)
 onto your home network over USB serial, so the mount joins your router and gets
-a LAN IP. 📦 **[Download the v1.0 release](../../releases/tag/home-network-config-v1.0)**
+a LAN IP. 📦 **[Download the v1.0 release](https://github.com/wesmcd6/pmc8-tools/releases/tag/home-network-config-v1.0)**
 — `Configure-PMC8-Home-Network-v1.0.exe`, a single self-contained executable
 (no installer, no .NET install needed).
 
 ## Spiral Search Bridge
 
-Cross-platform spiral-search automation for **ASCOM Alpaca**–compatible mounts. Point at the expected coordinates, press **Start**, and the mount runs an expanding spiral search pattern until your target appears. Browser-based UI with phone **tilt-to-steer** for fine centering. 📦 **[Download the v2.0 release →](../../releases/tag/spiralsearch-v2.0)**
+Cross-platform spiral-search automation for **ASCOM Alpaca**–compatible mounts. Point at the expected coordinates, press **Start**, and the mount runs an expanding spiral search pattern until your target appears. Browser-based UI with phone **tilt-to-steer** for fine centering. 📦 **[Download the v2.0 release →](https://github.com/wesmcd6/pmc8-tools/releases/tag/spiralsearch-v2.0)**
 
 | Item | Link | Notes |
 |---|---|---|
-| README and User Manual | [`spiral-search`](../../tree/spiral-search) | Setup, FOV calculators, tilt steering, REST API, troubleshooting |
-| Windows ZIP | [`SpiralSearch-Bridge-v2.0-win-x86.zip`](../../releases/tag/spiralsearch-v2.0) | 32- and 64-bit; extract and run `SpiralSearch.Bridge.exe` |
-| macOS ZIP (Apple Silicon) | [`SpiralSearch-Bridge-v2.0-macos-arm64.zip`](../../releases/tag/spiralsearch-v2.0) | M1–M4; ad-hoc codesign on first run (see manual) |
-| macOS ZIP (Intel) | [`SpiralSearch-Bridge-v2.0-macos-x64.zip`](../../releases/tag/spiralsearch-v2.0) | Intel Macs |
-| Linux ARM64 ZIP | [`SpiralSearch-Bridge-v2.0-linux-arm64.zip`](../../releases/tag/spiralsearch-v2.0) | Raspberry Pi 4/5 |
+| README and User Manual | [`spiral-search`](https://github.com/wesmcd6/pmc8-tools/tree/spiral-search) | Setup, FOV calculators, tilt steering, REST API, troubleshooting |
+| Windows ZIP | [`SpiralSearch-Bridge-v2.0-win-x86.zip`](https://github.com/wesmcd6/pmc8-tools/releases/tag/spiralsearch-v2.0) | 32- and 64-bit; extract and run `SpiralSearch.Bridge.exe` |
+| macOS ZIP (Apple Silicon) | [`SpiralSearch-Bridge-v2.0-macos-arm64.zip`](https://github.com/wesmcd6/pmc8-tools/releases/tag/spiralsearch-v2.0) | M1–M4; ad-hoc codesign on first run (see manual) |
+| macOS ZIP (Intel) | [`SpiralSearch-Bridge-v2.0-macos-x64.zip`](https://github.com/wesmcd6/pmc8-tools/releases/tag/spiralsearch-v2.0) | Intel Macs |
+| Linux ARM64 ZIP | [`SpiralSearch-Bridge-v2.0-linux-arm64.zip`](https://github.com/wesmcd6/pmc8-tools/releases/tag/spiralsearch-v2.0) | Raspberry Pi 4/5 |
 
 Each zip is a self-contained single-file executable plus the User Manual — no .NET runtime or installer required.
 
@@ -67,43 +67,50 @@ Each zip is a self-contained single-file executable plus the User Manual — no 
 
 | Tool | Branch | Description |
 |------|--------|-------------|
-| PMC-Eight UFCT | [`pmc8-ufct`](../../tree/pmc8-ufct) | **Universal Firmware Configuration Tool** (Windows) — read/write config, send raw commands, serial firmware flash, RN-131 restore |
-| PMC-Eight Firmware | [`pmc8-firmware`](../../tree/pmc8-firmware) | Latest Propeller firmware, **20A02.2.0.1** (flash via UFCT or the PMC8 Dashboard) |
-| ESP32 OTA Update | [**v2.3 release**](../../releases/tag/esp32-ota-v2.3) · [docs](../../tree/esp32-ota) | Update the **ESP32** Wi-Fi firmware (**ES4.2.30**) over the air — no opening the mount. Windows, macOS and Linux/Raspberry Pi. Finds the serial port for you |
-| ESP32 Serial Flash | [**v1.0 release**](../../releases/tag/esp32-serial-flash-v1.0) · [docs](../../tree/esp32-serial-flash) | Rescue path when OTA isn't possible — needs opening the mount and fitting a jumper. Windows, macOS and Linux/Raspberry Pi |
+| PMC-Eight UFCT | [`pmc8-ufct`](https://github.com/wesmcd6/pmc8-tools/tree/pmc8-ufct) | **Universal Firmware Configuration Tool** (Windows) — read/write config, send raw commands, serial firmware flash, RN-131 restore |
+| PMC-Eight Firmware | [`pmc8-firmware`](https://github.com/wesmcd6/pmc8-tools/tree/pmc8-firmware) | Latest Propeller firmware, **20A02.2.0.1** (flash via UFCT or the PMC8 Dashboard) |
+| ESP32 OTA Update | [**v2.5 release**](https://github.com/wesmcd6/pmc8-tools/releases/tag/esp32-ota-v2.5) · [docs](https://github.com/wesmcd6/pmc8-tools/tree/esp32-ota) | Update the **ESP32** Wi-Fi firmware (**ES4.2.32**) over the air — no opening the mount. Windows, macOS and Linux/Raspberry Pi. Finds the serial port for you, and tells you in seconds if your module is too old for OTA. New in ES4.2.32: the PMC-Eight web tool, served by the mount at `http://<mount-ip>/` |
+| ESP32 Serial Flash | [**v1.3 release**](https://github.com/wesmcd6/pmc8-tools/releases/tag/esp32-serial-flash-v1.3) · [docs](https://github.com/wesmcd6/pmc8-tools/tree/esp32-serial-flash) | Rescue path when OTA isn't possible — needs opening the mount and fitting a jumper. Windows, macOS and Linux/Raspberry Pi |
+| ESP8266 Serial Flash | [**v1.1 release**](https://github.com/wesmcd6/pmc8-tools/releases/tag/esp8266-serial-flash-v1.1) · [docs](https://github.com/wesmcd6/pmc8-tools/tree/esp8266-serial-flash) | For mounts with the **ESP8266** module, whose original firmware predates over-the-air updating — this is the one-time bootstrap to a build that supports it. Needs opening the mount and fitting a jumper. Windows, macOS and Linux/Raspberry Pi. **v1.1 writes the whole chip and replaces v1.0**, which could leave an original-firmware module silent |
 
 ## Alternate distribution branches
 
 | Branch | What it carries |
 |---|---|
-| [`pwa-server`](../../tree/pwa-server) | Pre-built PWA server distribution (alternate to the Release zip — same content) |
-| [`windows`](../../tree/windows) | Windows desktop binary (alternate to the Release zip — same content) |
+| [`pwa-server`](https://github.com/wesmcd6/pmc8-tools/tree/pwa-server) | Pre-built PWA server distribution (alternate to the Release zip — same content) |
+| [`windows`](https://github.com/wesmcd6/pmc8-tools/tree/windows) | Windows desktop binary (alternate to the Release zip — same content) |
 
-## About ExploreStars Envision&trade;
+## About Envision the Heavens&trade;
 
 Cross-platform telescope mount control — runs on Android, Windows, and as a self-hosted PWA accessible from any phone or tablet on your local network.
 
 - 11,000+ object catalog with altitude-based visibility coloring
 - GoTo, Sync, Tracking (Sidereal/Solar/Lunar), Meridian Flip, multi-star alignment
+- **Polar Assist** — polar-align with the altitude and azimuth bolts, guided by the star alignment
+- **Pointing model** fitted from your alignment stars (including Taki's Z1 term), with refraction correction and alignments remembered per site
 - **Model-aware display** — chart marker and RA/Dec readouts can show the alignment-corrected "true sky" position
-- **Star Seeker** in-app sky chart with sensor-based push-to identification
+- **Star Seeker** in-app sky chart with sensor-based push-to identification, pointing at true north (World Magnetic Model)
+- **VR sky window** — hold the phone up and the screen shows the sky behind it
+- **Object pictures on the sky chart** — zoom in and nebulae, galaxies and clusters appear as pictures placed on the real sky, with common names
+- **Find home** — the phone's tilt sensor finds the mount's home position, with or without a mount connection
+- **Comets and meteor showers** — every known comet (Minor Planet Center orbits, refreshed weekly) with GoTo and Follow, and active shower radiants on the chart; the Visibility calendar shows the good nights
 - **Camera field-of-view** overlay on the sky chart, with a calculator — sensor/camera presets, Barlow/reducer, and rotator-angle support
 - Spiral Search, Thumb Pad centering with Fine/Coarse rates
 - Solar system targets: planets, Moon, Sun, minor planets
 - Multi-language UI (English, 简体中文, Français, Italiano, Español, Deutsch, Português, 日本語, Nederlands, Polski, Українська)
 - Night vision mode for dark adaptation
 - GPS location, firmware config reader/writer
-- **Envision Mode (Enhanced WiFi)** — optional faster, smoother multi-client operation where the WiFi-module firmware supports it
+- **Envision Mode (Enhanced WiFi)** — faster, smoother multi-client operation where the WiFi-module firmware supports it; switch it on and off from the app, set the mount to start up in it, and see at a glance whether it is running
 - **Share one mount** with the app on several phones/tablets AND an ASCOM Alpaca / INDI driver at once — Cartes du Ciel, SkySafari, Stellarium, etc. connect through the driver
-- **Self-hosted server runs on macOS, Raspberry Pi, and Windows** from one download (web server + USB-serial support bundled)
+- **Self-hosted server runs on macOS, PC Linux, Raspberry Pi, and Windows** from one download (web server + USB-serial support bundled)
 - **QR-code phone setup** — a `/start` page with scannable codes for the certificate, the app, and mount-sharing, plus a "Start Envision" full-screen Home-Screen icon
 - Built-in user manual
 
 ## Trademarks &amp; copyright
 
-ExploreStars Envision&trade; is a trademark of Wes McDonald. Explore Scientific&trade;, ExploreStars&trade;, and PMC-Eight&trade; are trademarks of [Explore Scientific, LLC](https://www.explorescientific.com), and are used here with acknowledgement.
+Envision the Heavens&trade; is a trademark of Wes McDonald. Explore Scientific&trade;, ExploreStars&trade;, and PMC-Eight&trade; are trademarks of [Explore Scientific, LLC](https://www.explorescientific.com), and are used here with acknowledgement.
 
-ExploreStars Envision&trade; is an independent application that controls Explore Scientific&trade; PMC-Eight&trade; telescope mounts. The application code and project materials are authored and owned by Wes McDonald. If Explore Scientific, LLC recommends, endorses, promotes, or distributes the app, that should be understood as support for an independently authored application within the PMC-Eight&trade; ecosystem, not as Explore Scientific authorship or ownership of the app.
+Envision the Heavens&trade; is an independent application that controls Explore Scientific&trade; PMC-Eight&trade; telescope mounts. The application code and project materials are authored and owned by Wes McDonald except where third-party credits are listed in `LICENSES.md`. If Explore Scientific, LLC recommends, endorses, promotes, or distributes the app, that endorsement should be understood as support for use of an independently authored application within the PMC-Eight ecosystem, not as Explore Scientific authorship or ownership of the app.
 
 Copyright © 2026 Wes McDonald. All rights reserved.
 

@@ -1,0 +1,7 @@
+{
+  "upstream": "wesmcd6/pmc8-tools",
+  "branch": "esp8266-serial-flash",
+  "commit": "e4063c223b58e89daa3d6d3469898947c2f8fab6",
+  "date": "2026-11-20",
+  "note": "Markdown repository-relative links resolved to the upstream GitHub repository."
+}

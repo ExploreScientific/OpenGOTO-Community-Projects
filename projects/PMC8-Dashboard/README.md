@@ -1,26 +1,11 @@
 # PMC8 Dashboard
 
-PMC8 Dashboard is a community utility by Wes McDonald for working with Explore Scientific PMC-Eight mount control systems. This OpenGOTO Community project area publishes the Dashboard source, user documentation, platform launch helpers, redistribution notices, and release checksums under the Explore Scientific GitHub organization.
+Wes McDonald's community utility for PMC-Eight configuration, connection testing, firmware upload and network setup. Current mirrored release: **v0.2.7**, refreshed 2026-11-20.
 
-## Status
+[Download Windows, macOS or Linux packages](https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-dashboard-v0.2.7).
 
-- Source import completed: May 25, 2026
-- Updated mirror import: June 30, 2026
-- Imported from: Wes McDonald's PMC8 Dashboard release packages and `wesmcd6/pmc8-tools` Dashboard release review
-- Current Explore Scientific release: `pmc8-dashboard-v0.2.0`
+v0.2.7 fixes ESP8266 Get WiFi Address and Configure for Home Network when firmware 2.2.40-env or later is running Envision fast mode. Linux/Raspberry Pi guidance uses distribution packages and a reboot after changing serial-port group membership.
 
-Release page:
+`source/windows`, `source/macos` and `source/linux` contain the corresponding release contents. `docs` contains the current manuals; `installers` retains platform launch helpers. Follow the README inside your platform ZIP. Python/PyQt6 prerequisites are described there. To remove the portable application, remove its extracted folder; separately installed dependencies are managed by your operating system.
 
-https://github.com/ExploreScientific/OpenGOTO-Community-Projects/releases/tag/pmc8-dashboard-v0.2.0
-
-## Project Layout
-
-- `source/windows/` contains the current Windows Dashboard source package, including the Network tab implementation and pure-Python Propeller loader used by the Windows upload path.
-- `source/macos/` contains the current macOS Dashboard source package, including the Network tab implementation, Python loader module, and bundled `p1load` helper.
-- `docs/` contains the Dashboard user manual.
-- `installers/` contains platform launch helpers and distribution notes.
-- `checksums/` contains SHA256 checksums for the imported source and reference release packages.
-
-## Notes
-
-The Windows and macOS Dashboard packages are intentionally preserved separately because their launch and firmware upload paths differ. Future maintenance can consolidate common code after Wes confirms a preferred upstream structure.
+The platform ZIPs are unmodified upstream downloads. [Upstream release](https://github.com/wesmcd6/pmc8-tools/releases/tag/pmc8-dashboard-v0.2.7). Preserve the contributor's notices and attribution. This mirror has passed archive, checksum and Python syntax checks; no physical-mount testing was performed for this refresh.

@@ -1,0 +1,7 @@
+{
+  "upstream": "wesmcd6/pmc8-tools",
+  "branch": "pmc8-dashboard",
+  "commit": "309a2e98313db3c915993e214277cc58b992d5ac",
+  "date": "2026-11-20",
+  "note": "Markdown repository-relative links resolved to the upstream GitHub repository."
+}
